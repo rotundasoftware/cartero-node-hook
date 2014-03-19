@@ -15,19 +15,19 @@ test( 'throw errors when required options are missing', function( t ) {
 
 	t.throws( function() {
 		var hook = CarteroNodeHook( {
-			assetsDir : path.join( __dirname, "example3/static/assets" ),
+			assetsDirPath : path.join( __dirname, "example3/static/assets" ),
 		} );
 	} );
 
 	t.throws( function() {
 		var hook = CarteroNodeHook( {
-			viewDir : path.join( __dirname, "example3/views" ),
+			viewDirPath : path.join( __dirname, "example3/views" ),
 		} );
 	} );
 
 	t.throws( function() {
 		var hook = CarteroNodeHook( {
-			viewDir : path.join( __dirname, "example3/views" ),
+			viewDirPath : path.join( __dirname, "example3/views" ),
 		} );
 	} );
 } );
@@ -35,8 +35,8 @@ test( 'throw errors when required options are missing', function( t ) {
 test( 'example3', function( t ) {
 	t.plan( 1 );
 	var hook = new CarteroNodeHook( {
-		assetsDir : path.join( __dirname, "example3/static/assets" ),
-		viewDir : path.join( __dirname, "example3/views" ),
+		assetsDirPath : path.join( __dirname, "example3/static/assets" ),
+		viewDirPath : path.join( __dirname, "example3/views" ),
 		assetsBaseUrl : "/l"
 	} );
 
@@ -52,8 +52,8 @@ test( 'example3 (no baseUrl)', function( t ) {
 
 	t.plan( 1 );
 	var hook = new CarteroNodeHook( {
-		assetsDir : path.join( __dirname, "example3/static/assets" ),
-		viewDir : path.join( __dirname, "example3/views" )
+		assetsDirPath : path.join( __dirname, "example3/static/assets" ),
+		viewDirPath : path.join( __dirname, "example3/views" )
 	} );
 
 	hook.getHtmlToLoadAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {

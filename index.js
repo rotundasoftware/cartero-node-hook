@@ -7,15 +7,15 @@ module.exports = CarteroNodeHook;
 function CarteroNodeHook( options ) {
 	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( options );
 
-	if( options === undefined || options.assetsDir === undefined || options.viewDir === undefined )
-		throw new Error( "assetsDir and viewDir options are both required" );
+	if( options === undefined || options.assetsDirPath === undefined || options.viewDirPath === undefined )
+		throw new Error( "assetsDirPath and viewDirPath options are both required" );
 
-	this.viewDir = options.viewDir;
-	this.assetsDir = options.assetsDir;
+	this.viewDirPath = options.viewDirPath;
+	this.assetsDirPath = options.assetsDirPath;
 	this.assetsBaseUrl = options.assetsBaseUrl || '/';
 
 	try {
-		this.viewMap = require( path.join( this.assetsDir, "view_map.json" ) );
+		this.viewMap = require( path.join( this.assetsDirPath, "view_map.json" ) );
 	}
 	catch( err ) {
 		throw new Error( "Error while reading the view_map.json file. Have you run cartero yet?" + err.stack );
@@ -25,7 +25,7 @@ function CarteroNodeHook( options ) {
 }
 
 CarteroNodeHook.prototype.getParcelId = function( viewPath ) {
-	return this.viewMap[ shasum( path.relative( this.viewDir, viewPath ) ) ];
+	return this.viewMap[ shasum( path.relative( this.viewDirPath, viewPath ) ) ];
 };
 
 CarteroNodeHook.prototype.getAssetsJson = function( viewPath, cb ) {
@@ -35,7 +35,7 @@ CarteroNodeHook.prototype.getAssetsJson = function( viewPath, cb ) {
 	if( this.assetsMap[ parcelId ] )
 		cb( null, this.assetsMap[ parcelId ] );
 	else {
-		fs.readFile( path.join( this.assetsDir, parcelId, "assets.json" ), function( err, contents ) {
+		fs.readFile( path.join( this.assetsDirPath, parcelId, "assets.json" ), function( err, contents ) {
 			if( err ) return callback( err );
 			_this.assetsMap[ parcelId ] = JSON.parse( contents );
 			cb( null, _this.assetsMap[ parcelId ] );
