@@ -13,12 +13,14 @@ Create a CarteroNodeHook instance.
 
 ```
 {
-  viewDir : "views",            // (required) path to your views directory. same as viewDirPath passed to cartero.
+  viewDirPath : "views",            // (required) path to your views directory.
+                                    // same as viewDirPath passed to cartero.
   
-  assetsDir : "static/assets",  // (required) path to where your cartero-generated assets are.
-                                // same as dstDir passed to cartero.
+  assetsDirPath : "static/assets",  // (required) path to where your cartero-generated assets are.
+                                    // same as dstDir passed to cartero.
 
-  assetsBaseUrl : "/yourApp"    // (optional) string to prepend to the asset url if your app isn't deployed at the root.
+  assetsBaseUrl : "/yourApp"        // (optional) string to prepend to the asset url
+                                    // if your app isn't deployed at the root.
 }
 ```
 
