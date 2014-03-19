@@ -1,60 +1,64 @@
  var fs = require( "fs" ),
 	path = require( "path" ),
-	async = require( "async" ),
 	shasum = require( "shasum" );
 
-module.exports = function( options ) {
+module.exports = CarteroNodeHook;
+
+function CarteroNodeHook( options ) {
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( options );
+
 	if( options === undefined || options.assetsDir === undefined || options.viewDir === undefined )
 		throw new Error( "assetsDir and viewDir options are both required" );
 
-	var assetsDir = options.assetsDir;
-	var viewDir = options.viewDir;
-	var assetsBaseUrl = options.assetsBaseUrl || "/";
-	var viewMap;
-	var assetsMap = {};
+	this.viewDir = options.viewDir;
+	this.assetsDir = options.assetsDir;
+	this.assetsBaseUrl = options.assetsBaseUrl || '/';
 
 	try {
-		viewMap = require( path.join( assetsDir, "view_map.json" ) );
+		this.viewMap = require( path.join( this.assetsDir, "view_map.json" ) );
 	}
 	catch( err ) {
-		throw new Error( "Error while reading the view_map.json file. Have you run the grunt cartero task yet?" + err.stack );
+		throw new Error( "Error while reading the view_map.json file. Have you run cartero yet?" + err.stack );
 	}
 
-	function getAssetsForView( viewPath, callback ) {
-		var parcelId = viewMap[ shasum( path.relative( viewDir, viewPath ) ) ];
+	this.assetsMap = {};
+}
 
-		async.waterfall( [
-			function( callback ) {
-				if( assetsMap[ parcelId ] )
-					callback( null, assetsMap[ parcelId ] );
-				else {
-					fs.readFile( path.join( assetsDir, parcelId, "assets.json" ), function( err, contents ) {
-						if( err ) return callback( err );
-						assetsMap[ parcelId ] = JSON.parse( contents );
-						callback( null, assetsMap[ parcelId ] );
-					} );
-				}
-			}],
-			function( err, assets ) {
-				if( err )
-					return callback( err );
-				
-				var result = {};
+CarteroNodeHook.prototype.getParcelId = function( viewPath ) {
+	return this.viewMap[ shasum( path.relative( this.viewDir, viewPath ) ) ];
+};
 
-				result.js = assets.script.map( function( fileName ) {
-					return "<script type='text/javascript' src='" + path.join( assetsBaseUrl, fileName ) + "'></script>";
-				} ).join( "" );
+CarteroNodeHook.prototype.getAssetsJson = function( viewPath, cb ) {
+	var _this = this;
+	var parcelId = this.getParcelId( viewPath );
 
-				result.css = assets.style.map( function( fileName ) {
-					return "<link rel='stylesheet' href='" + path.join( assetsBaseUrl, fileName ) + "'></link>";
-				} ).join( "" );
-
-				callback( null, result );
-			}
-		);
+	if( this.assetsMap[ parcelId ] )
+		cb( null, this.assetsMap[ parcelId ] );
+	else {
+		fs.readFile( path.join( this.assetsDir, parcelId, "assets.json" ), function( err, contents ) {
+			if( err ) return callback( err );
+			_this.assetsMap[ parcelId ] = JSON.parse( contents );
+			cb( null, _this.assetsMap[ parcelId ] );
+		} );
 	}
+};
 
-	return {
-		getAssetsForView : getAssetsForView
-	};
+CarteroNodeHook.prototype.getHtmlToLoadAssets = function( viewPath, cb ) {
+	var _this = this;
+	this.getAssetsJson( viewPath, function( err, assets ) {
+		if( err )
+			return cb( err );
+
+		var result = {};
+
+		result.js = assets.script.map( function( fileName ) {
+			return "<script type='text/javascript' src='" + path.join( _this.assetsBaseUrl, fileName ) + "'></script>";
+		} ).join( "" );
+
+		result.css = assets.style.map( function( fileName ) {
+			return "<link rel='stylesheet' href='" + path.join( _this.assetsBaseUrl, fileName ) + "'></link>";
+		} ).join( "" );
+
+		cb( null, result );
+	} );
 };
