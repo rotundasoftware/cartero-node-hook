@@ -3,6 +3,8 @@ cartero-node-hook
 
 Use this hook in combination with upcoming new version of [cartero](https://github.com/rotundasoftware/cartero) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero/tree/browserify) to get the HTML to load the js and css assets needed for your parcel.
 
+[![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
+
 ## Install
 `npm install cartero-node-hook`
 
