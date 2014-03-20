@@ -24,7 +24,7 @@ cnh.getHtmlToLoadAssets( viewPath, function( err, assetHtml ) {
 } );
 ```
 
-Using express? Check out the [cartero-express-hook](https://github.com/rotundasoftware/cartero-express-hook), an express middleware wrapper around cartero-node-hook that injects the js and css html into `res.locals` variables.
+Using Express? Check out the new version of the [cartero-express-hook](https://github.com/rotundasoftware/cartero-express-hook) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero-express-hook/tree/browserify). Its an express middleware wrapper around cartero-node-hook that injects the js and css html into the `res.locals` variables before render.
 
 ## API
 
