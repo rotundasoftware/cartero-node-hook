@@ -1,7 +1,7 @@
 cartero-node-hook
 =================
 
-Use this hook in combination with [cartero](https://github.com/rotundasoftware/cartero) to get the HTML to load the js and css assets needed for your parcel.
+Use this hook in combination with new version of [cartero](https://github.com/rotundasoftware/cartero) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero/tree/browserify) to get the HTML to load the js and css assets needed for your parcel.
 
 ## Install
 `npm install cartero-node-hook`
@@ -42,8 +42,7 @@ Create a CarteroNodeHook instance.
   assetsDirPath : "static/assets",  // (required) path to where your cartero-generated assets are.
                                     // same as dstDir passed to cartero.
 
-  assetsBaseUrl : "/yourApp"        // (optional) string to prepend to the asset url
-                                    // if your app isn't deployed at the root.
+  assetsBaseUrl : "/"               // (optional) base url corresponding to the assets directory.
 }
 ```
 
