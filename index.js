@@ -43,7 +43,7 @@ CarteroNodeHook.prototype.getAssetsJson = function( viewPath, cb ) {
 	}
 };
 
-CarteroNodeHook.prototype.getHtmlToLoadAssets = function( viewPath, cb ) {
+CarteroNodeHook.prototype.getUrlsToLoadAssets = function( viewPath, cb ) {
 	var _this = this;
 	this.getAssetsJson( viewPath, function( err, assets ) {
 		if( err )
@@ -52,11 +52,30 @@ CarteroNodeHook.prototype.getHtmlToLoadAssets = function( viewPath, cb ) {
 		var result = {};
 
 		result.js = assets.script.map( function( fileName ) {
-			return "<script type='text/javascript' src='" + path.join( _this.assetsBaseUrl, fileName ) + "'></script>";
-		} ).join( "" );
+			return path.join( _this.assetsBaseUrl, fileName );
+		} );
 
 		result.css = assets.style.map( function( fileName ) {
-			return "<link rel='stylesheet' href='" + path.join( _this.assetsBaseUrl, fileName ) + "'></link>";
+			return path.join( _this.assetsBaseUrl, fileName );
+		} );
+
+		cb( null, result );
+	} );
+};
+
+CarteroNodeHook.prototype.getHtmlToLoadAssets = function( viewPath, cb ) {
+	this.getUrlsToLoadAssets( viewPath, function( err, assetUrls ) {
+		if( err )
+			return cb( err );
+
+		var result = {};
+
+		result.js = assetUrls.js.map( function( url ) {
+			return "<script type='text/javascript' src='" + url + "'></script>";
+		} ).join( "" );
+
+		result.css = assetUrls.css.map( function( url ) {
+			return "<link rel='stylesheet' href='" + url + "'></link>";
 		} ).join( "" );
 
 		cb( null, result );
