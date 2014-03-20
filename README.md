@@ -59,4 +59,16 @@ function( err, assetHtml ) {
   console.log( assetHtml.css ); // a string of <link> tags
 }
 ```
+
+###cnh.getUrlsToLoadAssets( viewPath, cb )
+
+Get arrays of URLs to load the js and css assets for the view at viewPath. `cb` should have the following signature:
+
+```javascript
+
+function( err, assetHtml ) {
+  console.log( assetHtml.js ); // array of absolute url strings (ex: [ '/path/to/bundle.js' ])
+  console.log( assetHtml.css ); // array of absolute url strings (ex: [ '/path/to/bundle.css' ])
+}
+```
   
