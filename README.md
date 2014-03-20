@@ -1,7 +1,7 @@
 cartero-node-hook
 =================
 
-Use this hook in combination with new version of [cartero](https://github.com/rotundasoftware/cartero) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero/tree/browserify) to get the HTML to load the js and css assets needed for your parcel.
+Use this hook in combination with upcoming new version of [cartero](https://github.com/rotundasoftware/cartero) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero/tree/browserify) to get the HTML to load the js and css assets needed for your parcel.
 
 ## Install
 `npm install cartero-node-hook`
@@ -24,7 +24,7 @@ cnh.getHtmlToLoadAssets( viewPath, function( err, assetHtml ) {
 } );
 ```
 
-Using Express? Check out the new version of the [cartero-express-hook](https://github.com/rotundasoftware/cartero-express-hook) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero-express-hook/tree/browserify). Its an express middleware wrapper around cartero-node-hook that injects the js and css html into the `res.locals` variables before render.
+Using Express? Check out the upcoming new version of the [cartero-express-hook](https://github.com/rotundasoftware/cartero-express-hook) being developed on the [browserify branch](https://github.com/rotundasoftware/cartero-express-hook/tree/browserify). Its an express middleware wrapper around cartero-node-hook that injects the js and css html into the `res.locals` variables before render.
 
 ## API
 
