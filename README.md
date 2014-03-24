@@ -20,9 +20,9 @@ var cnh = new CarteroNodeHook( {
 } );
 
 // when a request comes in, use the following snippet to get the js and css html to inject into the page
-cnh.getHtmlToLoadAssets( viewPath, function( err, assetHtml ) {
-  // assetHtml.js is a string of <script> tags
-  // assetHtml.css is a string of <link> tags
+cnh.getViewAssetHTMLTags( viewPath, function( err, assetHTML ) {
+  // assetHTML.script is a string of <script> tags
+  // assetHTML.style is a string of <link> tags
 } );
 ```
 
@@ -36,7 +36,7 @@ Create a CarteroNodeHook instance.
 
 `opts`:
 
-```
+```javascript
 {
   viewDirPath : "views",            // (required) path to your views directory.
                                     // same as viewDirPath passed to cartero.
@@ -48,27 +48,43 @@ Create a CarteroNodeHook instance.
 }
 ```
 
-###cnh.getHtmlToLoadAssets( viewPath, cb )
+###cnh.getViewAssetHTMLTags( viewPath, cb )
 
-Get the HTML to load the js and css assets for the view at viewPath. `cb` should have the following signature:
+Get the HTML to load the script and style assets for the view at `viewPath`.
+
+`cb` should have the following signature:
 
 ```javascript
 
-function( err, assetHtml ) {
-  console.log( assetHtml.js ); // a string of <script> tags
-  console.log( assetHtml.css ); // a string of <link> tags
+function( err, assetHTML ) {
+  console.log( assetHTML.script ); // a string of <script> tags
+  console.log( assetHTML.style ); // a string of <link> tags
 }
 ```
 
-###cnh.getUrlsToLoadAssets( viewPath, cb )
+###cnh.getViewAssets( viewPath, opts, cb )
 
-Get arrays of URLs to load the js and css assets for the view at viewPath. `cb` should have the following signature:
+Get the assets by type for the view at `viewPath`.
+
+`opts`:
+```javascript
+{
+  urls : true,                    // (optional, default: `true`) whether the url to the asset
+                                  // or the path relative to the `assetsDirPath` is returned.
+                                  // defaults to true.
+  
+  types : [ 'script', 'style' ],  // (optional, defaults to all assets) the types of assets to return.
+
+}
+```
+
+`cb` should have the following signature:
 
 ```javascript
 
 function( err, assetHtml ) {
-  console.log( assetHtml.js ); // array of absolute url strings (ex: [ '/path/to/bundle.js' ])
-  console.log( assetHtml.css ); // array of absolute url strings (ex: [ '/path/to/bundle.css' ])
+  console.log( assetHtml.script ); // array of url or path strings (ex: [ '/path/to/bundle.js' ])
+  console.log( assetHtml.style ); // array of url or path strings (ex: [ '/path/to/bundle.css' ])
 }
 ```
   
