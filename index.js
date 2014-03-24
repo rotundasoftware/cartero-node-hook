@@ -43,38 +43,49 @@ CarteroNodeHook.prototype.getAssetsJson = function( viewPath, cb ) {
 	}
 };
 
-CarteroNodeHook.prototype.getUrlsToLoadAssets = function( viewPath, cb ) {
+CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 	var _this = this;
-	this.getAssetsJson( viewPath, function( err, assets ) {
+
+	var outputUrls = options.urls === undefined ? true : options.urls;
+
+	_this.getAssetsJson( viewPath, function( err, assets ) {
 		if( err )
 			return cb( err );
 
+		var assetTypesToReturn = options.types || Object.keys( assets );
+
 		var result = {};
 
-		result.js = assets.script.map( function( fileName ) {
-			return path.join( _this.assetsBaseUrl, fileName );
+		assetTypesToReturn.forEach( function( assetType ) {
+			if( assets[ assetType ] ) {
+				if( outputUrls ) {
+					result[ assetType ] = assets[ assetType ].map( function( assetPath ) {
+						return path.join( _this.assetsBaseUrl, assetPath );
+					} );
+				}
+				else
+					result[ assetType ] = assets[ assetType ];
+			}
+			else
+				result[ assetType ] = [];
 		} );
 
-		result.css = assets.style.map( function( fileName ) {
-			return path.join( _this.assetsBaseUrl, fileName );
-		} );
-
-		cb( null, result );
+		return cb( null, result );
 	} );
 };
 
-CarteroNodeHook.prototype.getHtmlToLoadAssets = function( viewPath, cb ) {
-	this.getUrlsToLoadAssets( viewPath, function( err, assetUrls ) {
+CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
+	this.getViewAssets( viewPath, { types : [ "style", "script" ], urls : true }, function( err, assetUrls ) {
 		if( err )
 			return cb( err );
 
 		var result = {};
 
-		result.js = assetUrls.js.map( function( url ) {
+		result.script = assetUrls.script.map( function( url ) {
 			return "<script type='text/javascript' src='" + url + "'></script>";
 		} ).join( "" );
 
-		result.css = assetUrls.css.map( function( url ) {
+		result.style = assetUrls.style.map( function( url ) {
 			return "<link rel='stylesheet' href='" + url + "'></link>";
 		} ).join( "" );
 

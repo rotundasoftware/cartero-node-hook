@@ -33,24 +33,31 @@ test( 'throw errors when required options are missing', function( t ) {
 } );
 
 test( 'example3', function( t ) {
-	t.plan( 2 );
+	t.plan( 3 );
 	var hook = new CarteroNodeHook( {
 		assetsDirPath : path.join( __dirname, "example3/static/assets" ),
 		viewDirPath : path.join( __dirname, "example3/views" ),
 		assetsBaseUrl : "/l"
 	} );
 
-	hook.getUrlsToLoadAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {
+	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), { urls : true }, function( err, result ) {
 		t.deepEqual( result, {
-			js : [ '/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
-			css : [ '/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
+			script : [ '/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
+			style : [ '/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
 		);
 	} );
 
-	hook.getHtmlToLoadAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {
+	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), { urls : false }, function( err, result ) {
 		t.deepEqual( result, {
-			js : '<script type=\'text/javascript\' src=\'/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js\'></script>',
-			css : '<link rel=\'stylesheet\' href=\'/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css\'></link>' }
+			script : [ 'b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
+			style : [ 'b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
+		);
+	} );
+
+	hook.getViewAssetHTMLTags( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {
+		t.deepEqual( result, {
+			script : '<script type=\'text/javascript\' src=\'/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js\'></script>',
+			style : '<link rel=\'stylesheet\' href=\'/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css\'></link>' }
 		);
 	} );
 } );
@@ -63,17 +70,17 @@ test( 'example3 (no baseUrl)', function( t ) {
 		viewDirPath : path.join( __dirname, "example3/views" )
 	} );
 
-	hook.getUrlsToLoadAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {
+	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), {}, function( err, result ) {
 		t.deepEqual( result, {
-			js : [ '/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
-			css : [ '/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
+			script : [ '/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
+			style : [ '/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
 		);
 	} );
 
-	hook.getHtmlToLoadAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {
+	hook.getViewAssetHTMLTags( path.join( __dirname, 'example3/views/page1/page1.jade' ), function( err, result ) {
 		t.deepEqual( result, {
-			js : '<script type=\'text/javascript\' src=\'/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js\'></script>',
-			css : '<link rel=\'stylesheet\' href=\'/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css\'></link>' }
+			script : '<script type=\'text/javascript\' src=\'/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js\'></script>',
+			style : '<link rel=\'stylesheet\' href=\'/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css\'></link>' }
 		);
 	} );
 } );
