@@ -1,21 +1,25 @@
- var fs = require( "fs" ),
-	path = require( "path" ),
-	shasum = require( "shasum" );
+var fs = require( "fs" );
+var path = require( "path" );
+var shasum = require( "shasum" );
+var resolve = require( "resolve" );
+
+var kViewMapName = "view_map.json";
+var kPackageMapName = "package_map.json";
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( options ) {
+function CarteroNodeHook( viewDirPath, outputDirPath, options ) {
 	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( options );
 
-	if( options === undefined || options.assetsDirPath === undefined || options.viewDirPath === undefined )
-		throw new Error( "assetsDirPath and viewDirPath options are both required" );
+	if( options === undefined || options.outputDirPath === undefined || options.viewDirPath === undefined )
+		throw new Error( "outputDirPath and viewDirPath options are both required" );
 
-	this.viewDirPath = options.viewDirPath;
-	this.assetsDirPath = options.assetsDirPath;
-	this.assetsBaseUrl = options.assetsBaseUrl || '/';
+	this.viewDirPath = viewDirPath;
+	this.outputDirPath = outputDirPath;
+	this.outputDirUrl = options.outputDirUrl || '/';
 
 	try {
-		this.viewMap = require( path.join( this.assetsDirPath, "view_map.json" ) );
+		this.viewMap = require( path.join( this.outputDirPath, kViewMapName ) );
 	}
 	catch( err ) {
 		throw new Error( "Error while reading the view_map.json file. Have you run cartero yet?" + err.stack );
@@ -23,25 +27,6 @@ function CarteroNodeHook( options ) {
 
 	this.assetsMap = {};
 }
-
-CarteroNodeHook.prototype.getParcelId = function( viewPath ) {
-	return this.viewMap[ shasum( path.relative( this.viewDirPath, viewPath ) ) ];
-};
-
-CarteroNodeHook.prototype.getAssetsJson = function( viewPath, cb ) {
-	var _this = this;
-	var parcelId = this.getParcelId( viewPath );
-
-	if( this.assetsMap[ parcelId ] )
-		cb( null, this.assetsMap[ parcelId ] );
-	else {
-		fs.readFile( path.join( this.assetsDirPath, parcelId, "assets.json" ), function( err, contents ) {
-			if( err ) return callback( err );
-			_this.assetsMap[ parcelId ] = JSON.parse( contents );
-			cb( null, _this.assetsMap[ parcelId ] );
-		} );
-	}
-};
 
 CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 	var _this = this;
@@ -60,7 +45,7 @@ CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 			if( assets[ assetType ] ) {
 				if( outputUrls ) {
 					result[ assetType ] = assets[ assetType ].map( function( assetPath ) {
-						return path.join( _this.assetsBaseUrl, assetPath );
+						return path.join( _this.outputDirUrl, assetPath );
 					} );
 				}
 				else
@@ -91,4 +76,44 @@ CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
 
 		cb( null, result );
 	} );
+};
+
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
+	var _this = this;
+
+	var packageMap = require( path.join( _this.outputDirPath, kViewMapName ) );
+
+	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
+		srcDirShasum = shasum( srcDir );
+		return packageMap[ srcDirShasum ] ? '/' + packageMap[ srcDirShasum ] : null; // return val of dstDir needs to be absolute path
+	} );
+
+	if( url === assetSrcAbsPath )
+		throw new Error( 'Could not find url for that asset.' );
+
+	if( _this.outputDirUrl ) {
+		var baseUrl = _this.outputDirUrl[0] === path.sep ? _this.outputDirUrl.slice(1) : _this.outputDirUrl;
+		url = baseUrl + url;
+	}
+
+	return url;
+};
+
+CarteroNodeHook.prototype._getParcelId = function( viewPath ) {
+	return this.viewMap[ shasum( path.relative( this.viewDirPath, viewPath ) ) ];
+};
+
+CarteroNodeHook.prototype._getAssetsJson = function( viewPath, cb ) {
+	var _this = this;
+	var parcelId = this.getParcelId( viewPath );
+
+	if( this.assetsMap[ parcelId ] )
+		cb( null, this.assetsMap[ parcelId ] );
+	else {
+		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
+			if( err ) return callback( err );
+			_this.assetsMap[ parcelId ] = JSON.parse( contents );
+			cb( null, _this.assetsMap[ parcelId ] );
+		} );
+	}
 };
