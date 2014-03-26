@@ -28,7 +28,8 @@
   },
   "homepage": "https://github.com/rotundasoftware/cartero-node-hook",
   "dependencies": {
-    "shasum": "~1.0.0"
+    "shasum": "~1.0.0",
+    "underscore": "~1.6.0"
   },
   "devDependencies": {
     "tape": "~2.10.2"

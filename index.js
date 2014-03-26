@@ -1,7 +1,7 @@
 var fs = require( "fs" );
 var path = require( "path" );
 var shasum = require( "shasum" );
-var resolve = require( "resolve" );
+var _ = require( "underscore" );
 
 var kViewMapName = "view_map.json";
 var kPackageMapName = "package_map.json";
@@ -11,12 +11,16 @@ module.exports = CarteroNodeHook;
 function CarteroNodeHook( viewDirPath, outputDirPath, options ) {
 	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( options );
 
-	if( options === undefined || options.outputDirPath === undefined || options.viewDirPath === undefined )
+	if( outputDirPath === undefined || viewDirPath === undefined )
 		throw new Error( "outputDirPath and viewDirPath options are both required" );
+
+	options = _.defaults( {}, options, {
+		outputDirUrl : '/'
+	} );
 
 	this.viewDirPath = viewDirPath;
 	this.outputDirPath = outputDirPath;
-	this.outputDirUrl = options.outputDirUrl || '/';
+	this.outputDirUrl = options.outputDirUrl;
 
 	try {
 		this.viewMap = require( path.join( this.outputDirPath, kViewMapName ) );
@@ -33,7 +37,7 @@ CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 
 	var outputUrls = options.urls === undefined ? true : options.urls;
 
-	_this.getAssetsJson( viewPath, function( err, assets ) {
+	_this._getAssetsJson( viewPath, function( err, assets ) {
 		if( err )
 			return cb( err );
 
@@ -68,12 +72,12 @@ CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
 
 		result.script = assetUrls.script.map( function( url ) {
 			return "<script type='text/javascript' src='" + url + "'></script>";
-		} ).join( "" );
+		} ).join( '\n' );
 
 		result.style = assetUrls.style.map( function( url ) {
 			return "<link rel='stylesheet' href='" + url + "'></link>";
-		} ).join( "" );
-
+		} ).join( '\n' );
+		
 		cb( null, result );
 	} );
 };
@@ -99,13 +103,9 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	return url;
 };
 
-CarteroNodeHook.prototype._getParcelId = function( viewPath ) {
-	return this.viewMap[ shasum( path.relative( this.viewDirPath, viewPath ) ) ];
-};
-
 CarteroNodeHook.prototype._getAssetsJson = function( viewPath, cb ) {
 	var _this = this;
-	var parcelId = this.getParcelId( viewPath );
+	var parcelId = this._getParcelId( viewPath );
 
 	if( this.assetsMap[ parcelId ] )
 		cb( null, this.assetsMap[ parcelId ] );
@@ -116,4 +116,8 @@ CarteroNodeHook.prototype._getAssetsJson = function( viewPath, cb ) {
 			cb( null, _this.assetsMap[ parcelId ] );
 		} );
 	}
+};
+
+CarteroNodeHook.prototype._getParcelId = function( viewPath ) {
+	return this.viewMap[ shasum( path.relative( this.viewDirPath, viewPath ) ) ];
 };

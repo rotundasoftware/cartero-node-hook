@@ -24,7 +24,8 @@ test( 'example3', function( t ) {
 	t.plan( 3 );
 	var hook = new CarteroNodeHook(
 		path.join( __dirname, "example3/views" ),
-		path.join( __dirname, "example3/static/assets" ), {
+		path.join( __dirname, "example3/static/assets" ),
+		{
 			outputDirUrl : "/l"
 		}
 	);
