@@ -62,6 +62,6 @@ h.getViewAssets( viewPath, { [ 'style' ] }, function( err, assets ) {
 }
 ```
 
-### url = h.getAssetUrl( assetPath )
+### h.getAssetUrl( assetPath )
 
 Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time Cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
