@@ -35,7 +35,9 @@ function CarteroNodeHook( viewDirPath, outputDirPath, options ) {
 CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 	var _this = this;
 
-	var outputUrls = options.urls === undefined ? true : options.urls;
+	options = _.defaults( {}, options, {
+		paths : false
+	} );
 
 	_this._getAssetsJson( viewPath, function( err, assets ) {
 		if( err )
@@ -47,7 +49,7 @@ CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 
 		assetTypesToReturn.forEach( function( assetType ) {
 			if( assets[ assetType ] ) {
-				if( outputUrls ) {
+				if( ! options.paths ) {
 					result[ assetType ] = assets[ assetType ].map( function( assetPath ) {
 						return path.join( _this.outputDirUrl, assetPath );
 					} );
@@ -77,7 +79,7 @@ CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
 		result.style = assetUrls.style.map( function( url ) {
 			return "<link rel='stylesheet' href='" + url + "'></link>";
 		} ).join( '\n' );
-		
+
 		cb( null, result );
 	} );
 };

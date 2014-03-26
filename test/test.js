@@ -30,14 +30,14 @@ test( 'example3', function( t ) {
 		}
 	);
 
-	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), { urls : true }, function( err, result ) {
+	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), { paths : false }, function( err, result ) {
 		t.deepEqual( result, {
 			script : [ '/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
 			style : [ '/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
 		);
 	} );
 
-	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), { urls : false }, function( err, result ) {
+	hook.getViewAssets( path.join( __dirname, 'example3/views/page1/page1.jade' ), { paths : true }, function( err, result ) {
 		t.deepEqual( result, {
 			script : [ 'b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_14d030e0e64ea9a1fced71e9da118cb29caa6676.js' ],
 			style : [ 'b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css' ] }
