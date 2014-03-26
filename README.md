@@ -6,7 +6,9 @@ Run time library for the [Cartero](https://github.com/rotundasoftware/cartero) a
 [![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
 
 ## Install
-`npm install cartero-node-hook`
+```
+npm install cartero-node-hook
+```
 
 ## Usage
 
