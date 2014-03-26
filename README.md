@@ -30,7 +30,7 @@ Using Express? The [cartero-express-hook](https://github.com/rotundasoftware/car
 
 ## API
 
-### hook( viewDirPath, outputDirPath, options );
+### h = hook( viewDirPath, outputDirPath, options );
 
 `viewDirPath` and `outputDirPath` are the absolute paths to your views directory and Cartero output directory, respectively, as passed into Cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the cartero output directory (default `'/'`).
 
