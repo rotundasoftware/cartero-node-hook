@@ -1,7 +1,7 @@
 cartero-node-hook
 =================
 
-A small run time library for the [Cartero](https://github.com/rotundasoftware/cartero) asset pipeline.
+Run time library for the [Cartero](https://github.com/rotundasoftware/cartero) asset pipeline.
 
 [![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
 
@@ -32,8 +32,7 @@ Using Express? The [cartero-express-hook](https://github.com/rotundasoftware/car
 
 ### hook( viewDirPath, outputDirPath, options );
 
-`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and Cartero output directory, respectively, as passed into Cartero at build time. Options may contain a `outputDirPath`, which is base url corresponding to the cartero output directory (default '/').
-```
+`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and Cartero output directory, respectively, as passed into Cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the cartero output directory (default `'/'`).
 
 ### h.getViewAssetHTMLTags( viewPath, cb )
 
