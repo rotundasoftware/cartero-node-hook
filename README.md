@@ -51,14 +51,13 @@ h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
 
 Returns a hash of the assets for the view at `viewPath` keyed by asset type. `options` may contain:
 
-  * `urls` - If `true` (default), asset urls are returned. If `false`, asset paths are returned (relative to the outputDirPath).
+  * `urls` - If `true` (default), asset urls are returned. If `false`, asset paths are returned (relative to the `outputDirPath`).
   * `types` - An array of assets types to return. If not supplied all asset types are returned.
 
 ```javascript
-h.getViewAssets( viewPath, options, function( err, assets ) {
+h.getViewAssets( viewPath, { urls : false, [ 'style' ] }, function( err, assets ) {
   function( err, assets ) {
-    console.log( assets.script ); // array of url or path strings (ex: [ '/path/to/bundle.js' ])
-    console.log( assets.style );  // array of url or path strings (ex: [ '/path/to/bundle.css' ])
+    console.log( assets.style );  // array of path strings (ex: [ 'rel/path/to/bundle.css' ])
   }
 }
 ```
