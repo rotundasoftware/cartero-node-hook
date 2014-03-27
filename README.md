@@ -54,7 +54,7 @@ Returns a hash of asset urls keyed by asset type. `options` may contain:
   * `types` - An array of assets types to return. If not supplied all asset types are returned.
 
 ```javascript
-h.getViewAssets( viewPath, { [ 'style' ] }, function( err, assets ) {
+h.getViewAssets( viewPath, { types : [ 'style' ] }, function( err, assets ) {
   function( err, assets ) {
     console.log( assets.style );  // array of urls (ex: [ '/url/to/bundle.css' ])
   }
