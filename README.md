@@ -1,7 +1,6 @@
-cartero-node-hook
-=================
+# cartero-node-hook
 
-Run time library for the [Cartero](https://github.com/rotundasoftware/cartero) asset pipeline.
+Node.js run time library for [Cartero](https://github.com/rotundasoftware/cartero).
 
 [![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
 
@@ -28,7 +27,7 @@ h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
 } );
 ```
 
-Using Express? The [cartero-express-hook](https://github.com/rotundasoftware/cartero-express-hook) is an express middleware wrapper for cartero-node-hook that injects the js and css html into the `res.locals` variables automatically before a view is rendered.
+Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/cartero-express-hook) automatically populates `res.locals` with the `script` and `link` tags for the view being rendered.
 
 ## API
 
@@ -67,3 +66,12 @@ h.getViewAssets( viewPath, { [ 'style' ] }, function( err, assets ) {
 ### h.getAssetUrl( assetPath )
 
 Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time Cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
+
+## Contributors
+
+* [Oleg Seletsky](https://github.com/go-oleg)
+* [David Beck](https://twitter.com/davegbeck)
+
+## License
+
+MIT
