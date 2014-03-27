@@ -9,7 +9,7 @@ var kPackageMapName = "package_map.json";
 module.exports = CarteroNodeHook;
 
 function CarteroNodeHook( viewDirPath, outputDirPath, options ) {
-	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( options );
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( viewDirPath, outputDirPath, options );
 
 	if( outputDirPath === undefined || viewDirPath === undefined )
 		throw new Error( "outputDirPath and viewDirPath options are both required" );
