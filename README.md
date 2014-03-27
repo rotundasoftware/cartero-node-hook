@@ -33,13 +33,11 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ### h = hook( viewDirPath, outputDirPath, options );
 
-`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and Cartero output directory, respectively, as passed into Cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the cartero output directory (default `'/'`).
+`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and Cartero output directory, respectively, as passed into Cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the Cartero output directory (default `'/'`).
 
 ### h.getViewAssetHTMLTags( viewPath, cb )
 
 Get the HTML tags to load the script and style assets for the view at `viewPath`.
-
-`cb` should have the following signature:
 
 ```javascript
 h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
@@ -50,9 +48,9 @@ h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
 
 ### h.getViewAssets( viewPath, options, cb )
 
-Returns a hash of the assets for the view at `viewPath` keyed by asset type. `options` may contain:
+Returns a hash of asset urls keyed by asset type. `options` may contain:
 
-  * `paths` - If truthy, asset paths are returned (relative to `outputDirPath`), instead of urls (prepended with `outputDirUrl`)
+  * `paths` - If true, asset paths are returned (relative to `outputDirPath`) insted of urls.
   * `types` - An array of assets types to return. If not supplied all asset types are returned.
 
 ```javascript
