@@ -1,10 +1,10 @@
 # cartero-node-hook
 
-Node.js run time library for [Cartero](https://github.com/rotundasoftware/cartero).
+Node.js run time library for [cartero](https://github.com/rotundasoftware/cartero).
 
 [![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
 
-## Install
+## Installation
 ```
 npm install cartero-node-hook
 ```
@@ -33,7 +33,7 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ### h = hook( viewDirPath, outputDirPath, options );
 
-`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and Cartero output directory, respectively, as passed into Cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the Cartero output directory (default `'/'`).
+`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the cartero output directory (default `'/'`).
 
 ### h.getViewAssetHTMLTags( viewPath, cb )
 
@@ -61,7 +61,7 @@ h.getViewAssets( viewPath, { types : [ 'style' ] }, function( err, assets ) {
 
 ### h.getAssetUrl( assetPath )
 
-Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time Cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
+Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
 
 ## Contributors
 
