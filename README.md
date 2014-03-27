@@ -50,7 +50,7 @@ h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
 
 Returns a hash of asset urls keyed by asset type. `options` may contain:
 
-  * `paths` - If true, asset paths are returned (relative to `outputDirPath`) insted of urls.
+  * `paths` - If true, asset paths are returned (relative to `outputDirPath`) instead of urls.
   * `types` - An array of assets types to return. If not supplied all asset types are returned.
 
 ```javascript
