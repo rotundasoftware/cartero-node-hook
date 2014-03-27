@@ -27,7 +27,7 @@ h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
 } );
 ```
 
-Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/cartero-express-hook) automatically populates `res.locals` with the `script` and `link` tags for the view being rendered.
+Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/cartero-express-middleware) automatically populates `res.locals` with the `script` and `link` tags for the view being rendered.
 
 ## API
 
