@@ -55,9 +55,7 @@ Returns a hash of asset urls keyed by asset type. `options` may contain:
 
 ```javascript
 h.getViewAssets( viewPath, { types : [ 'style' ] }, function( err, assets ) {
-  function( err, assets ) {
-    console.log( assets.style );  // array of urls (ex: [ '/url/to/bundle.css' ])
-  }
+  console.log( assets.style );  // array of urls (ex: [ '/url/to/bundle.css' ])
 }
 ```
 
