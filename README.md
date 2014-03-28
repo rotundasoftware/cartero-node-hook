@@ -33,7 +33,7 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ### h = hook( viewDirPath, outputDirPath, options );
 
-`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain a `outputDirPath`, which is base url corresponding to the cartero output directory (default `'/'`).
+`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain `outputDirPath`, which is base url corresponding to the cartero output directory relative to the domain root (default `'/'`).
 
 ### h.getViewAssetHTMLTags( viewPath, cb )
 
@@ -50,8 +50,8 @@ h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
 
 Returns a hash of asset urls keyed by asset type. `options` may contain:
 
-  * `paths` - If true, asset paths are returned (relative to `outputDirPath`) instead of urls.
   * `types` - An array of assets types to return. If not supplied all asset types are returned.
+  * `paths` - If true, asset paths are returned (relative to `outputDirPath`) instead of urls.
 
 ```javascript
 h.getViewAssets( viewPath, { types : [ 'style' ] }, function( err, assets ) {
