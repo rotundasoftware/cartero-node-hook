@@ -18,15 +18,15 @@ function CarteroNodeHook( viewDirPath, outputDirPath, options ) {
 		outputDirUrl : '/'
 	} );
 
-	this.viewDirPath = viewDirPath;
-	this.outputDirPath = outputDirPath;
+	this.viewDirPath = path.resolve( path.dirname( require.main.filename ), viewDirPath );
+	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 
 	try {
 		this.viewMap = require( path.join( this.outputDirPath, kViewMapName ) );
 	}
 	catch( err ) {
-		throw new Error( "Error while reading the view_map.json file. Have you run cartero yet?" + err.stack );
+		throw new Error( 'Error while reading the view_map.json file from ' + outputDirPath + '. Have you run cartero yet? ' + err );
 	}
 
 	this.assetsMap = {};
@@ -40,8 +40,7 @@ CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 	} );
 
 	_this._getAssetsJson( viewPath, function( err, assets ) {
-		if( err )
-			return cb( err );
+		if( err ) return cb( err );
 
 		var assetTypesToReturn = options.types || Object.keys( assets );
 
@@ -67,8 +66,7 @@ CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 
 CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
 	this.getViewAssets( viewPath, { types : [ "style", "script" ], urls : true }, function( err, assetUrls ) {
-		if( err )
-			return cb( err );
+		if( err ) return cb( err );
 
 		var result = {};
 
@@ -109,11 +107,14 @@ CarteroNodeHook.prototype._getAssetsJson = function( viewPath, cb ) {
 	var _this = this;
 	var parcelId = this._getParcelId( viewPath );
 
+	if( ! parcelId ) return cb( new Error( 'Could not find parcel for view "' + viewPath + '"' ) );
+
 	if( this.assetsMap[ parcelId ] )
 		cb( null, this.assetsMap[ parcelId ] );
 	else {
 		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
-			if( err ) return callback( err );
+			if( err ) return cb( err );
+
 			_this.assetsMap[ parcelId ] = JSON.parse( contents );
 			cb( null, _this.assetsMap[ parcelId ] );
 		} );
