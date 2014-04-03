@@ -8,17 +8,17 @@ var kPackageMapName = "package_map.json";
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( viewDirPath, outputDirPath, options ) {
-	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( viewDirPath, outputDirPath, options );
+function CarteroNodeHook( viewsDirPath, outputDirPath, options ) {
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( viewsDirPath, outputDirPath, options );
 
-	if( outputDirPath === undefined || viewDirPath === undefined )
-		throw new Error( "outputDirPath and viewDirPath options are both required" );
+	if( outputDirPath === undefined || viewsDirPath === undefined )
+		throw new Error( "outputDirPath and viewsDirPath options are both required" );
 
 	options = _.defaults( {}, options, {
 		outputDirUrl : '/'
 	} );
 
-	this.viewDirPath = path.resolve( path.dirname( require.main.filename ), viewDirPath );
+	this.viewsDirPath = path.resolve( path.dirname( require.main.filename ), viewsDirPath );
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 
@@ -65,7 +65,7 @@ CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
 };
 
 CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
-	this.getViewAssets( viewPath, { types : [ "style", "script" ], urls : true }, function( err, assetUrls ) {
+	this.getViewAssets( viewPath, { types : [ "style", "script" ] }, function( err, assetUrls ) {
 		if( err ) return cb( err );
 
 		var result = {};
@@ -122,5 +122,5 @@ CarteroNodeHook.prototype._getAssetsJson = function( viewPath, cb ) {
 };
 
 CarteroNodeHook.prototype._getParcelId = function( viewPath ) {
-	return this.viewMap[ shasum( path.relative( this.viewDirPath, viewPath ) ) ];
+	return this.viewMap[ shasum( path.relative( this.viewsDirPath, viewPath ) ) ];
 };
