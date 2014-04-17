@@ -1,6 +1,6 @@
 # cartero-node-hook
 
-Node.js run time library for [cartero](https://github.com/rotundasoftware/cartero).
+Simple Node.js run time library for [cartero](https://github.com/rotundasoftware/cartero).
 
 [![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
 
@@ -35,33 +35,35 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 `viewDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain `outputDirPath`, which is base url corresponding to the cartero output directory relative to the domain root (default `'/'`).
 
-### h.getViewAssetHTMLTags( viewPath, cb )
+### h.getParcelTags( parcelPath, cb )
 
-Get the HTML tags to load the script and style assets for the view at `viewPath`.
+Get the HTML tags to load the script and style assets for a parcel. `parcelPath` is the path of the parcel's directory.
 
 ```javascript
-h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
-  // tags.script is a string of <script> tags
-  // tags.style is a string of <link> tags
+h.getParcelTags( viewPath, function( err, tags ) {
+	// tags.script is a string of <script> tags
+	// tags.style is a string of <link> tags
 } );
 ```
 
-### h.getViewAssets( viewPath, options, cb )
+### h.getParcelAssets( parcelPath, cb )
 
-Returns a hash of asset urls keyed by asset type. `options` may contain:
-
-  * `types` - An array of assets types to return. If not supplied all asset types are returned.
-  * `paths` - If true, asset paths are returned (relative to `outputDirPath`) instead of urls.
+Returns a hash of asset paths keyed by asset type. All paths are relative to the output directory.
 
 ```javascript
-h.getViewAssets( viewPath, { types : [ 'style' ] }, function( err, assets ) {
-  console.log( assets.style );  // array of urls (ex: [ '/url/to/bundle.css' ])
+h.getParcelAssets( parcelPath, function( err, assets ) {
+	console.log( assets.style );  // array of paths (ex: [ 'url/to/bundle.css' ])
 }
 ```
+
+<!-- 
+
+removed this method for now.. see index.js for details
 
 ### h.getAssetUrl( assetPath )
 
 Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
+-->
 
 ## Contributors
 
