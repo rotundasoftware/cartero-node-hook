@@ -1,6 +1,6 @@
 # cartero-node-hook
 
-Simple Node.js run time library for [cartero](https://github.com/rotundasoftware/cartero).
+A hook for [cartero](https://github.com/rotundasoftware/cartero) implemented in Node.js.
 
 [![build status](https://secure.travis-ci.org/rotundasoftware/cartero-node-hook.png)](http://travis-ci.org/rotundasoftware/cartero-node-hook)
 
@@ -16,12 +16,12 @@ var hook = require( 'cartero-node-hook' );
 var path = require( 'path' );
 
 var h = hook( {
-  viewDirPath : path.join( 'views' ),
+  parcelsDirPath : path.join( 'views' ),
   outputDirPath : path.join( 'static/assets' )
 } );
 
-// get the js and css html to inject into a server side view
-h.getViewAssetHTMLTags( viewPath, function( err, tags ) {
+// get the js and css html of a parcel
+h.getParcelTags( parcelPath, function( err, tags ) {
   // tags.script is a string of <script> tags
   // tags.style is a string of <link> tags
 } );
@@ -31,9 +31,9 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ## API
 
-### h = hook( viewDirPath, outputDirPath, options );
+### h = hook( parcelsDirPath, outputDirPath, options );
 
-`viewDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain `outputDirPath`, which is base url corresponding to the cartero output directory relative to the domain root (default `'/'`).
+`parcelsDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain `outputDirPath`, which is base url corresponding to the cartero output directory relative to the domain root (default `'/'`).
 
 ### h.getParcelTags( parcelPath, cb )
 

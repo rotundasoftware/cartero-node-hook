@@ -8,17 +8,17 @@ var kPackageMapName = "package_map.json";
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( viewsDirPath, outputDirPath, options ) {
-	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( viewsDirPath, outputDirPath, options );
+function CarteroNodeHook( parcelsDirPath, outputDirPath, options ) {
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( parcelsDirPath, outputDirPath, options );
 
-	if( outputDirPath === undefined || viewsDirPath === undefined )
-		throw new Error( "outputDirPath and viewsDirPath options are both required" );
+	if( outputDirPath === undefined || parcelsDirPath === undefined )
+		throw new Error( "outputDirPath and parcelsDirPath options are both required" );
 
 	options = _.defaults( {}, options, {
 		outputDirUrl : '/'
 	} );
 
-	this.viewsDirPath = path.resolve( path.dirname( require.main.filename ), viewsDirPath );
+	this.parcelsDirPath = path.resolve( path.dirname( require.main.filename ), parcelsDirPath );
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 
@@ -38,17 +38,15 @@ CarteroNodeHook.prototype.getParcelTags = function( parcelSrcPath, cb ) {
 	this.getParcelAssets( parcelSrcPath, function( err, assetUrls ) {
 		if( err ) return cb( err );
 
-		var result = {};
-
-		result.script = assetUrls.script.map( function( assetPath ) {
+		var scriptTags = assetUrls.script.map( function( assetPath ) {
 			return "<script type='text/javascript' src='" + path.join( _this.outputDirUrl, assetPath ) + "'></script>";
 		} ).join( '\n' );
 
-		result.style = assetUrls.style.map( function( assetPath ) {
+		var styleTags = assetUrls.style.map( function( assetPath ) {
 			return "<link rel='stylesheet' href='" + path.join( _this.outputDirUrl, assetPath ) + "'></link>";
 		} ).join( '\n' );
 
-		cb( null, result );
+		cb( null, scriptTags, styleTags );
 	} );
 };
 
@@ -58,9 +56,9 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 	// we need a relative path from the views dir, since that is how our map is stored.
 	// view map uses relative pats so the app can change locations in the directory
 	// structure between build and run time without breaking the mapping.
-	parcelSrcPath = path.relative( this.viewsDirPath, path.resolve( parcelSrcPath ) );
+	parcelSrcPath = path.relative( this.parcelsDirPath, path.resolve( parcelSrcPath ) );
 
-	var parcelId = this.parcelMap[ shasum( parcelSrcPath ) ];
+	var parcelId = this.parcelMap[ parcelSrcPath ];
 	if( ! parcelId ) return cb( new Error( 'Could not find parcel with relative path "' + parcelSrcPath + '"' ) );
 
 	if( this.parcelAssetsCache[ parcelId ] )
@@ -75,23 +73,21 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 	}
 };
 
-// Taking this out for now. it works, but it requires that the app is located at the same place in the
-// directory tree at build time as at run time. Seems like a bad requirement to be imposing by default.
-// CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
-// 	var _this = this;
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
+	var _this = this;
 
-// 	var packageMap = require( path.join( _this.outputDirPath, kPackageMapName ) );
+	var packageMap = require( path.join( _this.outputDirPath, kPackageMapName ) );
 
-// 	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
-// 		srcDirShasum = shasum( srcDir );
-// 		return packageMap[ srcDirShasum ] ? '/' + packageMap[ srcDirShasum ] : null; // return val of dstDir needs to be absolute path
-// 	} );
+	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
+		srcDirShasum = shasum( srcDir );
+		return packageMap[ srcDirShasum ] ? '/' + packageMap[ srcDirShasum ] : null; // return val of dstDir needs to be absolute path
+	} );
 
-// 	if( url === assetSrcAbsPath )
-// 		throw new Error( 'Could not find url for that asset.' );
+	if( url === assetSrcAbsPath )
+		throw new Error( 'Could not find url for that asset.' );
 
-// 	if( _this.outputDirUrl )
-// 		url = path.join( _this.outputDirUrl, url );
+	if( _this.outputDirUrl )
+		url = path.join( _this.outputDirUrl, url );
 
-// 	return url;
-// };
+	return url;
+};
