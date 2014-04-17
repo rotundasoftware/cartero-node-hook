@@ -1,6 +1,6 @@
 {
   "name": "cartero-node-hook",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Node hook to get the list of assets required by a cartero parcel.",
   "main": "index.js",
   "scripts": {
