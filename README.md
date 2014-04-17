@@ -37,10 +37,11 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ### h.getParcelTags( parcelPath, cb )
 
-Get the HTML tags to load the script and style assets for a parcel. `parcelPath` is the path of the parcel's directory.
+Get the HTML tags to load the script and style assets for a parcel.
+
 
 ```javascript
-h.getParcelTags( viewPath, function( err, tags ) {
+h.getParcelTags( '~/my-app/views/page1', function( err, tags ) {
 	// tags.script is a string of <script> tags
 	// tags.style is a string of <link> tags
 } );
@@ -51,7 +52,7 @@ h.getParcelTags( viewPath, function( err, tags ) {
 Returns a hash of asset paths keyed by asset type. All paths are relative to the output directory.
 
 ```javascript
-h.getParcelAssets( parcelPath, function( err, assets ) {
+h.getParcelAssets( '/usr/rotunda/my-app/views/page2', function( err, assets ) {
 	console.log( assets.style );  // array of paths (ex: [ 'url/to/bundle.css' ])
 }
 ```
