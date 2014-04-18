@@ -3,89 +3,80 @@ var path = require( "path" );
 var shasum = require( "shasum" );
 var _ = require( "underscore" );
 
-var kViewMapName = "view_map.json";
+var kParcelMapName = "parcel_map.json";
 var kPackageMapName = "package_map.json";
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( viewsDirPath, outputDirPath, options ) {
-	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( viewsDirPath, outputDirPath, options );
+function CarteroNodeHook( parcelsDirPath, outputDirPath, options ) {
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( parcelsDirPath, outputDirPath, options );
 
-	if( outputDirPath === undefined || viewsDirPath === undefined )
-		throw new Error( "outputDirPath and viewsDirPath options are both required" );
+	if( outputDirPath === undefined || parcelsDirPath === undefined )
+		throw new Error( "outputDirPath and parcelsDirPath options are both required" );
 
 	options = _.defaults( {}, options, {
 		outputDirUrl : '/'
 	} );
 
-	this.viewsDirPath = path.resolve( path.dirname( require.main.filename ), viewsDirPath );
+	this.parcelsDirPath = path.resolve( path.dirname( require.main.filename ), parcelsDirPath );
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 
 	try {
-		this.viewMap = require( path.join( this.outputDirPath, kViewMapName ) );
+		this.parcelMap = require( path.join( this.outputDirPath, kParcelMapName ) );
 	}
 	catch( err ) {
-		throw new Error( 'Error while reading the view_map.json file from ' + outputDirPath + '. Have you run cartero yet? ' + err );
+		throw new Error( 'Error while reading ' + kParcelMapName + ' file from ' + outputDirPath + '. (Have you run cartero yet?)\n' + err );
 	}
 
-	this.assetsMap = {};
+	this.parcelAssetsCache = {};
 }
 
-CarteroNodeHook.prototype.getViewAssets = function( viewPath, options, cb ) {
+CarteroNodeHook.prototype.getParcelTags = function( parcelSrcPath, cb ) {
 	var _this = this;
 
-	options = _.defaults( {}, options, {
-		paths : false
-	} );
-
-	_this._getAssetsJson( viewPath, function( err, assets ) {
+	this.getParcelAssets( parcelSrcPath, function( err, assetUrls ) {
 		if( err ) return cb( err );
 
-		var assetTypesToReturn = options.types || Object.keys( assets );
+		var scriptTags = assetUrls.script.map( function( assetPath ) {
+			return "<script type='text/javascript' src='" + path.join( _this.outputDirUrl, assetPath ) + "'></script>";
+		} ).join( '\n' );
 
-		var result = {};
+		var styleTags = assetUrls.style.map( function( assetPath ) {
+			return "<link rel='stylesheet' href='" + path.join( _this.outputDirUrl, assetPath ) + "'></link>";
+		} ).join( '\n' );
 
-		assetTypesToReturn.forEach( function( assetType ) {
-			if( assets[ assetType ] ) {
-				if( ! options.paths ) {
-					result[ assetType ] = assets[ assetType ].map( function( assetPath ) {
-						return path.join( _this.outputDirUrl, assetPath );
-					} );
-				}
-				else
-					result[ assetType ] = assets[ assetType ];
-			}
-			else
-				result[ assetType ] = [];
-		} );
-
-		return cb( null, result );
+		cb( null, scriptTags, styleTags );
 	} );
 };
 
-CarteroNodeHook.prototype.getViewAssetHTMLTags = function( viewPath, cb ) {
-	this.getViewAssets( viewPath, { types : [ "style", "script" ] }, function( err, assetUrls ) {
-		if( err ) return cb( err );
+CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
+	var _this = this;
 
-		var result = {};
+	// we need a relative path from the views dir, since that is how our map is stored.
+	// view map uses relative pats so the app can change locations in the directory
+	// structure between build and run time without breaking the mapping.
+	parcelSrcPath = path.relative( this.parcelsDirPath, path.resolve( parcelSrcPath ) );
 
-		result.script = assetUrls.script.map( function( url ) {
-			return "<script type='text/javascript' src='" + url + "'></script>";
-		} ).join( '\n' );
+	var parcelId = this.parcelMap[ parcelSrcPath ];
+	if( ! parcelId ) return cb( new Error( 'Could not find parcel with relative path "' + parcelSrcPath + '"' ) );
 
-		result.style = assetUrls.style.map( function( url ) {
-			return "<link rel='stylesheet' href='" + url + "'></link>";
-		} ).join( '\n' );
+	if( this.parcelAssetsCache[ parcelId ] )
+		cb( null, this.parcelAssetsCache[ parcelId ] );
+	else {
+		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
+			if( err ) return cb( err );
 
-		cb( null, result );
-	} );
+			_this.parcelAssetsCache[ parcelId ] = JSON.parse( contents );
+			cb( null, _this.parcelAssetsCache[ parcelId ] );
+		} );
+	}
 };
 
 CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	var _this = this;
 
-	var packageMap = require( path.join( _this.outputDirPath, kViewMapName ) );
+	var packageMap = require( path.join( _this.outputDirPath, kPackageMapName ) );
 
 	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
 		srcDirShasum = shasum( srcDir );
@@ -95,32 +86,8 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	if( url === assetSrcAbsPath )
 		throw new Error( 'Could not find url for that asset.' );
 
-	if( _this.outputDirUrl ) {
-		var baseUrl = _this.outputDirUrl[0] === path.sep ? _this.outputDirUrl.slice(1) : _this.outputDirUrl;
-		url = baseUrl + url;
-	}
+	if( _this.outputDirUrl )
+		url = path.join( _this.outputDirUrl, url );
 
 	return url;
-};
-
-CarteroNodeHook.prototype._getAssetsJson = function( viewPath, cb ) {
-	var _this = this;
-	var parcelId = this._getParcelId( viewPath );
-
-	if( ! parcelId ) return cb( new Error( 'Could not find parcel for view "' + viewPath + '"' ) );
-
-	if( this.assetsMap[ parcelId ] )
-		cb( null, this.assetsMap[ parcelId ] );
-	else {
-		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
-			if( err ) return cb( err );
-
-			_this.assetsMap[ parcelId ] = JSON.parse( contents );
-			cb( null, _this.assetsMap[ parcelId ] );
-		} );
-	}
-};
-
-CarteroNodeHook.prototype._getParcelId = function( viewPath ) {
-	return this.viewMap[ shasum( path.relative( this.viewsDirPath, viewPath ) ) ];
 };
