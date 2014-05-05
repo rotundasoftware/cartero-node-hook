@@ -1,6 +1,7 @@
 var fs = require( "fs" );
 var path = require( "path" );
 var shasum = require( "shasum" );
+var pathMapper = require( "path-mapper" );
 var _ = require( "underscore" );
 
 var kParcelMapName = "parcel_map.json";
@@ -56,7 +57,7 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 	// we need a relative path from the views dir, since that is how our map is stored.
 	// view map uses relative pats so the app can change locations in the directory
 	// structure between build and run time without breaking the mapping.
-	parcelSrcPath = path.relative( this.parcelsDirPath, path.resolve( parcelSrcPath ) );
+	parcelSrcPath = path.relative( this.parcelsDirPath, parcelSrcPath );
 
 	var parcelId = this.parcelMap[ parcelSrcPath ];
 	if( ! parcelId ) return cb( new Error( 'Could not find parcel with relative path "' + parcelSrcPath + '"' ) );
