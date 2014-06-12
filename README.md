@@ -33,7 +33,13 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ### h = hook( parcelsDirPath, outputDirPath, options );
 
-`parcelsDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time. `options` may contain `outputDirPath`, which is base url corresponding to the cartero output directory relative to the domain root (default `'/'`).
+`parcelsDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time.
+
+`options` may contain:
+
+`outputDirPath` (default: `'/'` ) - the base url corresponding to the cartero output directory relative to the domain root.
+
+`cacheParcelData` (default: `true`) - whether the parcel data read in is cached for future requests. Set to `false` when using in combination with cartero watch mode so the new/modified assets are properly loaded.
 
 ### h.getParcelTags( parcelPath, cb )
 
