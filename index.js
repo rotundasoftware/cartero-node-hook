@@ -16,12 +16,14 @@ function CarteroNodeHook( parcelsDirPath, outputDirPath, options ) {
 		throw new Error( "outputDirPath and parcelsDirPath options are both required" );
 
 	options = _.defaults( {}, options, {
-		outputDirUrl : '/'
+		outputDirUrl : '/',
+		cacheParcelData : true
 	} );
 
 	this.parcelsDirPath = path.resolve( path.dirname( require.main.filename ), parcelsDirPath );
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
+	this.cacheParcelData = options.cacheParcelData;
 
 	try {
 		this.parcelMap = require( path.join( this.outputDirPath, kParcelMapName ) );
@@ -68,8 +70,12 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
 			if( err ) return cb( err );
 
-			_this.parcelAssetsCache[ parcelId ] = JSON.parse( contents );
-			cb( null, _this.parcelAssetsCache[ parcelId ] );
+			var parcelAssets = JSON.parse( contents );
+
+			if( _this.cacheParcelData )
+				_this.parcelAssetsCache[ parcelId ] = parcelAssets;
+
+			cb( null, parcelAssets );
 		} );
 	}
 };
