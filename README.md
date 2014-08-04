@@ -15,10 +15,7 @@ npm install cartero-node-hook
 var hook = require( 'cartero-node-hook' );
 var path = require( 'path' );
 
-var h = hook( {
-  parcelsDirPath : path.join( 'views' ),
-  outputDirPath : path.join( 'static/assets' )
-} );
+var h = hook( path.join( __dirname, 'static/assets' ) );
 
 // get the js and css html of a parcel
 h.getParcelTags( parcelPath, function( err, tags ) {
@@ -31,23 +28,20 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 ## API
 
-### h = hook( parcelsDirPath, outputDirPath, options );
+### h = hook( outputDirPath, options );
 
-`parcelsDirPath` and `outputDirPath` are the absolute paths to your views directory and cartero output directory, respectively, as passed into cartero at build time.
+`outputDirPath` is the absolute path to your cartero output directory, as passed into cartero at build time. `options` may contain:
 
-`options` may contain:
+* `outputDirPath` (default: `'/'` ) - the base url corresponding to the cartero output directory relative to the domain root.
 
-`outputDirPath` (default: `'/'` ) - the base url corresponding to the cartero output directory relative to the domain root.
-
-`cacheParcelData` (default: `true`) - whether the parcel data read in is cached for future requests. Set to `false` when using in combination with cartero watch mode so the new/modified assets are properly loaded.
+* `cache` (default: `true`) - whether or not to cache meta data. Set to `false` in dev mode so that you don't need to restart your application when assets are changed.
 
 ### h.getParcelTags( parcelPath, cb )
 
 Get the HTML tags to load the script and style assets for a parcel.
 
-
 ```javascript
-h.getParcelTags( '~/my-app/views/page1', function( err, tags ) {
+h.getParcelTags( '/usr/rotunda/my-app/views/page1', function( err, tags ) {
 	// tags.script is a string of <script> tags
 	// tags.style is a string of <link> tags
 } );
@@ -63,14 +57,9 @@ h.getParcelAssets( '/usr/rotunda/my-app/views/page2', function( err, assets ) {
 }
 ```
 
-<!-- 
-
-removed this method for now.. see index.js for details
-
 ### h.getAssetUrl( assetPath )
 
 Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
--->
 
 ## Contributors
 
@@ -80,3 +69,16 @@ Returns the url of the asset with the absolute path `assetPath`. (Or more precis
 ## License
 
 MIT
+
+## Change log
+
+### v1.0.0
+
+* Removed `parcelDirPath` argument from initializer. (No longer needed since parcel paths are now stored in meta data as absolute paths.) Note this is an API change that will affect **all users**. Just get rid of the first argument to the intializer and you'll be good to go.
+* `cacheParcelData` option changed to just `cache`
+* Other assorted tweaks to work with new metaData.json file from cartero v3.0.0. You *must* use cartero >= v3.0.0 with this hook.
+
+### v0.3.1
+
+* First version in this change log.
+>>>>>>> Stashed changes

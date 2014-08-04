@@ -17,12 +17,12 @@ function CarteroNodeHook( outputDirPath, options ) {
 
 	options = _.defaults( {}, options, {
 		outputDirUrl : '/',
-		cacheParcelData : true
+		cache : true
 	} );
 
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
-	this.cacheParcelData = options.cacheParcelData;
+	this.cache = options.cache;
 
 	try {
 		this.metaData = require( path.join( this.outputDirPath, kMetaDataFileName ) );
@@ -73,7 +73,7 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 
 			var parcelAssets = JSON.parse( contents );
 
-			if( _this.cacheParcelData )
+			if( _this.cache )
 				_this.parcelAssetsCache[ parcelId ] = parcelAssets;
 
 			cb( null, parcelAssets );
