@@ -4,32 +4,34 @@ var shasum = require( "shasum" );
 var pathMapper = require( "path-mapper" );
 var _ = require( "underscore" );
 
-var kParcelMapName = "parcel_map.json";
-var kPackageMapName = "package_map.json";
+var kMetaDataFileName = "metaData.json";
+var kOldPackageMapName = "package_map.json";
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( parcelsDirPath, outputDirPath, options ) {
-	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( parcelsDirPath, outputDirPath, options );
+function CarteroNodeHook( outputDirPath, options ) {
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( outputDirPath, options );
 
-	if( outputDirPath === undefined || parcelsDirPath === undefined )
-		throw new Error( "outputDirPath and parcelsDirPath options are both required" );
+	if( outputDirPath === undefined )
+		throw new Error( "outputDirPath is required" );
 
 	options = _.defaults( {}, options, {
 		outputDirUrl : '/',
 		cacheParcelData : true
 	} );
 
-	this.parcelsDirPath = path.resolve( path.dirname( require.main.filename ), parcelsDirPath );
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 	this.cacheParcelData = options.cacheParcelData;
 
 	try {
-		this.parcelMap = require( path.join( this.outputDirPath, kParcelMapName ) );
+		this.metaData = require( path.join( this.outputDirPath, kMetaDataFileName ) );
 	}
 	catch( err ) {
-		throw new Error( 'Error while reading ' + kParcelMapName + ' file from ' + outputDirPath + '. (Have you run cartero yet?)\n' + err );
+		if( fs.existsSync( path.join( this.outputDirPath, kOldPackageMapName ) ) )
+			throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + outputDirPath + '. It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook.\n' + err );
+
+		throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + outputDirPath + '. (Have you run cartero yet?)\n' + err );
 	}
 
 	this.parcelAssetsCache = {};
@@ -59,10 +61,9 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 	// we need a relative path from the views dir, since that is how our map is stored.
 	// view map uses relative pats so the app can change locations in the directory
 	// structure between build and run time without breaking the mapping.
-	parcelSrcPath = path.relative( this.parcelsDirPath, parcelSrcPath );
-
-	var parcelId = this.parcelMap[ parcelSrcPath ];
-	if( ! parcelId ) return cb( new Error( 'Could not find parcel with relative path "' + parcelSrcPath + '"' ) );
+	
+	var parcelId = this.metaData.packageMap[ parcelSrcPath ];
+	if( ! parcelId ) return cb( new Error( 'Could not find parcel with absolute path "' + parcelSrcPath + '"' ) );
 
 	if( this.parcelAssetsCache[ parcelId ] )
 		cb( null, this.parcelAssetsCache[ parcelId ] );
@@ -83,11 +84,9 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	var _this = this;
 
-	var packageMap = require( path.join( _this.outputDirPath, kPackageMapName ) );
-
 	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
-		srcDirShasum = shasum( srcDir );
-		return packageMap[ srcDirShasum ] ? '/' + packageMap[ srcDirShasum ] : null; // return val of dstDir needs to be absolute path
+		//srcDirShasum = shasum( srcDir );
+		return this.metaData.packageMap[ srcDir ] ? '/' + this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
 	} );
 
 	if( url === assetSrcAbsPath )
