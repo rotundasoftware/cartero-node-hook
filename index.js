@@ -59,7 +59,7 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 	var _this = this;
 
 	// we need a relative path from the views dir, since that is how our map is stored.
-	// view map uses relative pats so the app can change locations in the directory
+	// view map uses relative paths so the app can change locations in the directory
 	// structure between build and run time without breaking the mapping.
 	
 	var parcelId = this.metaData.packageMap[ parcelSrcPath ];
