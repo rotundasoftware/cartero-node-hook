@@ -86,7 +86,7 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 
 	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
 		//srcDirShasum = shasum( srcDir );
-		return this.metaData.packageMap[ srcDir ] ? '/' + this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
+		return _this.metaData.packageMap[ srcDir ] ? '/' + _this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
 	} );
 
 	if( url === assetSrcAbsPath )
