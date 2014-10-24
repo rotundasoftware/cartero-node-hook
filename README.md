@@ -32,7 +32,7 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 `outputDirPath` is the absolute path to your cartero output directory, as passed into cartero at build time. `options` may contain:
 
-* `outputDirPath` (default: `'/'` ) - the base url corresponding to the cartero output directory relative to the domain root.
+* `outputDirUrl` (default: `'/'` ) - the base url corresponding to the cartero output directory relative to the domain root.
 
 * `cache` (default: `true`) - whether or not to cache meta data. Set to `false` in dev mode so that you don't need to restart your application when assets are changed.
 
