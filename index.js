@@ -16,10 +16,12 @@ function CarteroNodeHook( outputDirPath, options ) {
 		throw new Error( "outputDirPath is required" );
 
 	options = _.defaults( {}, options, {
+		rootApplicationDir : undefined,
 		outputDirUrl : '/',
 		cache : true
 	} );
 
+	this.rootApplicationDir = options.rootApplicationDir;
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 	this.cache = options.cache;
@@ -62,10 +64,10 @@ CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
 	// view map uses relative paths so the app can change locations in the directory
 	// structure between build and run time without breaking the mapping.
 	
-	var parcelId = this.metaData.packageMap[ parcelSrcPath ];
+	var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( parcelSrcPath ) ];
 	if( ! parcelId ) return cb( new Error( 'Could not find parcel with absolute path "' + parcelSrcPath + '"' ) );
 
-	if( this.parcelAssetsCache[ parcelId ] )
+	if( _this.cache && this.parcelAssetsCache[ parcelId ] )
 		cb( null, this.parcelAssetsCache[ parcelId ] );
 	else {
 		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
@@ -85,7 +87,7 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	var _this = this;
 
 	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
-		//srcDirShasum = shasum( srcDir );
+		srcDir = _this.getPackageMapKeyFromPath( srcDir );
 		return _this.metaData.packageMap[ srcDir ] ? '/' + _this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
 	} );
 
@@ -96,4 +98,9 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 		url = path.join( _this.outputDirUrl, url );
 
 	return url;
+};
+
+CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
+	if( this.rootApplicationDir ) return './' + path.relative( this.rootApplicationDir, packagePath );
+	else return packagePath;
 };
