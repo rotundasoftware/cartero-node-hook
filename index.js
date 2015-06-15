@@ -16,12 +16,12 @@ function CarteroNodeHook( outputDirPath, options ) {
 		throw new Error( "outputDirPath is required" );
 
 	options = _.defaults( {}, options, {
-		rootApplicationDir : undefined,
+		appRootDir : undefined,
 		outputDirUrl : '/',
 		cache : true
 	} );
 
-	this.rootApplicationDir = options.rootApplicationDir;
+	this.appRootDir = options.appRootDir;
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 	this.cache = options.cache;
@@ -101,6 +101,6 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
-	if( this.rootApplicationDir ) return './' + path.relative( this.rootApplicationDir, packagePath );
+	if( this.appRootDir ) return './' + path.relative( this.appRootDir, packagePath );
 	else return packagePath;
 };
