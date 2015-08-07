@@ -1,11 +1,13 @@
-var fs = require( "fs" );
-var path = require( "path" );
-var shasum = require( "shasum" );
-var pathMapper = require( "path-mapper" );
-var _ = require( "underscore" );
+var fs = require( 'fs' );
+var path = require( 'path' );
+var shasum = require( 'shasum' );
+var pathMapper = require( 'path-mapper' );
+var _ = require( 'underscore' );
 
-var kMetaDataFileName = "metaData.json";
-var kOldPackageMapName = "package_map.json";
+var kMetaDataFileName = 'metaData.json';
+var kOldPackageMapName = 'package_map.json';
+
+var kMetaDataFormatVersion = 2;
 
 module.exports = CarteroNodeHook;
 
@@ -13,64 +15,53 @@ function CarteroNodeHook( outputDirPath, options ) {
 	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( outputDirPath, options );
 
 	if( outputDirPath === undefined )
-		throw new Error( "outputDirPath is required" );
+		throw new Error( 'outputDirPath is required' );
 
 	options = _.defaults( {}, options, {
 		appRootDir : undefined,
 		outputDirUrl : '/',
 		cache : true
 	} );
-
+	
 	this.appRootDir = options.appRootDir;
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 	this.cache = options.cache;
 
-	try {
-		this.metaData = require( path.join( this.outputDirPath, kMetaDataFileName ) );
-	}
-	catch( err ) {
-		if( fs.existsSync( path.join( this.outputDirPath, kOldPackageMapName ) ) )
-			throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + outputDirPath + '. It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook.\n' + err );
-
-		throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + outputDirPath + '. (Have you run cartero yet?)\n' + err );
-	}
-
+	this.metaData = this.getMetaData();
 	this.parcelAssetsCache = {};
 }
 
-CarteroNodeHook.prototype.getParcelTags = function( parcelSrcPath, cb ) {
+CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) {
 	var _this = this;
 
-	this.getParcelAssets( parcelSrcPath, function( err, assetUrls ) {
+	this.getAssetsForEntryPoint( entryPointPath, function( err, assetUrls ) {
 		if( err ) return cb( err );
 
 		var scriptTags = assetUrls.script.map( function( assetPath ) {
-			return "<script type='text/javascript' src='" + path.join( _this.outputDirUrl, assetPath ) + "'></script>";
+			return '<script type="text/javascript" src="' + path.join( _this.outputDirUrl, assetPath ) + '"></script>';
 		} ).join( '\n' );
 
 		var styleTags = assetUrls.style.map( function( assetPath ) {
-			return "<link rel='stylesheet' href='" + path.join( _this.outputDirUrl, assetPath ) + "'></link>";
+			return '<link rel="stylesheet" href="' + path.join( _this.outputDirUrl, assetPath ) + '"></link>';
 		} ).join( '\n' );
 
 		cb( null, scriptTags, styleTags );
 	} );
 };
 
-CarteroNodeHook.prototype.getParcelAssets = function( parcelSrcPath, cb ) {
+CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb ) {
 	var _this = this;
 
-	// we need a relative path from the views dir, since that is how our map is stored.
-	// view map uses relative paths so the app can change locations in the directory
-	// structure between build and run time without breaking the mapping.
-	
-	var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( parcelSrcPath ) ];
-	if( ! parcelId ) return cb( new Error( 'Could not find parcel with absolute path "' + parcelSrcPath + '"' ) );
+	if( ! _this.cache ) this.metaData = this.getMetaData();
+
+	var parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
+	if( ! parcelId ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
 
 	if( _this.cache && this.parcelAssetsCache[ parcelId ] )
 		cb( null, this.parcelAssetsCache[ parcelId ] );
 	else {
-		fs.readFile( path.join( this.outputDirPath, parcelId, "assets.json" ), function( err, contents ) {
+		fs.readFile( path.join( this.outputDirPath, parcelId, 'assets.json' ), function( err, contents ) {
 			if( err ) return cb( err );
 
 			var parcelAssets = JSON.parse( contents );
@@ -104,3 +95,23 @@ CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
 	if( this.appRootDir ) return './' + path.relative( this.appRootDir, packagePath );
 	else return packagePath;
 };
+
+CarteroNodeHook.prototype.getMetaData = function() {
+	var metaData;
+
+	try {
+		var data = fs.readFileSync( path.join( this.outputDirPath, kMetaDataFileName ), 'utf8' );
+		metaData = JSON.parse( data );
+	} catch( err ) {
+		if( fs.existsSync( path.join( this.outputDirPath, kOldPackageMapName ) ) )
+			throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + this.outputDirPath + '. It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook.\n' + err );
+
+		throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + this.outputDirPath + '. (Have you run cartero yet?)\n' + err );
+	}
+
+	if( metaData.formatVersion < kMetaDataFormatVersion ) {
+		throw new Error( 'It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook. Please update your version of cartero to the most recent release.' );
+	}
+
+	return metaData;
+}

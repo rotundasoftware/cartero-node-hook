@@ -17,8 +17,9 @@ var path = require( 'path' );
 
 var h = hook( path.join( __dirname, 'static/assets' ) );
 
-// get the js and css html of a parcel
-h.getParcelTags( parcelPath, function( err, tags ) {
+// get the html tags to load the js and css assets associated with
+// an entry point for which cartero was run.
+h.getTagsForEntryPoint( entryPointPath, function( err, tags ) {
   // tags.script is a string of <script> tags
   // tags.style is a string of <link> tags
 } );
@@ -38,30 +39,30 @@ Using Express? [cartero-express-midddleware](https://github.com/rotundasoftware/
 
 * `cache` (default: true) - whether or not to cache meta data. Set to `false` in dev mode so that you don't need to restart your application when assets are changed.
 
-### h.getParcelTags( parcelPath, cb )
+### h.getTagsForEntryPoint( entryPointPath, cb )
 
-Get the HTML tags to load the script and style assets for a parcel.
+Get the HTML tags to load the script and style assets for a JavaScript entry point.
 
 ```javascript
-h.getParcelTags( '/usr/rotunda/my-app/views/page1', function( err, tags ) {
+h.getTagsForEntryPoint( '/usr/rotunda/my-app/views/page1/page1.js', function( err, tags ) {
 	// tags.script is a string of <script> tags
 	// tags.style is a string of <link> tags
 } );
 ```
 
-### h.getParcelAssets( parcelPath, cb )
+### h.getAssetsForEntryPoint( entryPointPath, cb )
 
 Returns a hash of asset paths keyed by asset type. All paths are relative to the output directory.
 
 ```javascript
-h.getParcelAssets( '/usr/rotunda/my-app/views/page2', function( err, assets ) {
+h.getAssetsForEntryPoint( '/usr/rotunda/my-app/views/page2/page2.js', function( err, assets ) {
 	console.log( assets.style );  // array of paths (ex: [ 'url/to/bundle.css' ])
 }
 ```
 
 ### h.getAssetUrl( assetPath )
 
-Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any parcel.
+Returns the url of the asset with the absolute path `assetPath`. (Or more precisely, returns the url of the asset that was at that path at the time cartero was run.) An error is thrown if the supplied path does not correspond to an asset of any entry point for which cartero was run.
 
 ## Contributors
 
@@ -73,6 +74,10 @@ Returns the url of the asset with the absolute path `assetPath`. (Or more precis
 MIT
 
 ## Change log
+
+### v2.0.0
+
+* Changed `getParcelTags` to `getTagsForEntryPoint` and `getParcelAssets` to `getAssetsForEntryPoint`
 
 ### v1.0.0
 
