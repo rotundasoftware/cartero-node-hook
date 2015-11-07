@@ -50,12 +50,14 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 	} );
 };
 
-CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb ) {
+CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointDir, cb ) {
 	var _this = this;
 
 	if( ! _this.cache ) this.metaData = this.getMetaData();
 
-	var parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
+  //TODO fix this.
+  //var parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ] || this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointDir ) ]; //fallback to packageMap if not in entryPointMap, there are some duped info TODO
+  var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointDir ) ]; //why not??
 	if( ! parcelId ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
 
 	if( _this.cache && this.parcelAssetsCache[ parcelId ] )
@@ -74,21 +76,28 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	}
 };
 
-CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath ) {
 	var _this = this;
 
-	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
-		srcDir = _this.getPackageMapKeyFromPath( srcDir );
-		return _this.metaData.packageMap[ srcDir ] ? '/' + _this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
-	} );
+  var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[assetSrcPath];
+  if (!assetPath) throw new Error('asset not found in metaData.assetMap');
+  //var assetDir = path.dirname(assetSrcAbsPath); //not right--still need to find fingerprint dir and replace first dir with it
 
-	if( url === assetSrcAbsPath )
-		throw new Error( 'Could not find url for that asset.' );
+  //var assetDir = pathMapper( assetSrcAbsPath, function( srcDir ) {
+    //debugger;
 
-	if( _this.outputDirUrl )
-		url = path.join( _this.outputDirUrl, url );
+    ////srcDir = _this.getPackageMapKeyFromPath( srcDir );
+    ////return _this.metaData.assetMap[ srcDir ] ? '/' + _this.metaData.assetMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
+    //return _this.metaData.packageMap[srcDir]; // return val of dstDir needs to be absolute path
+  //} );
 
-	return url;
+  //if( assetDir === assetSrcAbsPath ) throw new Error( 'Could not find url for that asset.' );
+
+  //var assetUrl = path.join('/', assetDir, assetFileName);
+
+  if( _this.outputDirUrl ) assetPath = path.join( _this.outputDirUrl, assetPath );
+
+	return assetPath;
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
@@ -114,4 +123,4 @@ CarteroNodeHook.prototype.getMetaData = function() {
 	}
 
 	return metaData;
-}
+};
