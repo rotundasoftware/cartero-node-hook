@@ -22,7 +22,7 @@ function CarteroNodeHook( outputDirPath, options ) {
 		outputDirUrl : '/',
 		cache : true
 	} );
-	
+
 	this.appRootDir = options.appRootDir;
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
@@ -50,14 +50,15 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 	} );
 };
 
-CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointDir, cb ) {
+CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb ) { //entryPointPath can be dir or path (that may end in .js)
 	var _this = this;
 
 	if( ! _this.cache ) this.metaData = this.getMetaData();
 
-  //TODO fix this.
-  //var parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ] || this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointDir ) ]; //fallback to packageMap if not in entryPointMap, there are some duped info TODO
-  var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointDir ) ]; //why not??
+  if (/.+\.js$/.test(entryPointPath)) entryPointPath = path.dirname(entryPointPath);
+  var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
+  //parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ]; //same result as above, just with the client.js on the end--can just lookup in packagemap right?
+
 	if( ! parcelId ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
 
 	if( _this.cache && this.parcelAssetsCache[ parcelId ] )
@@ -80,20 +81,7 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath ) {
 	var _this = this;
 
   var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[assetSrcPath];
-  if (!assetPath) throw new Error('asset not found in metaData.assetMap');
-  //var assetDir = path.dirname(assetSrcAbsPath); //not right--still need to find fingerprint dir and replace first dir with it
-
-  //var assetDir = pathMapper( assetSrcAbsPath, function( srcDir ) {
-    //debugger;
-
-    ////srcDir = _this.getPackageMapKeyFromPath( srcDir );
-    ////return _this.metaData.assetMap[ srcDir ] ? '/' + _this.metaData.assetMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
-    //return _this.metaData.packageMap[srcDir]; // return val of dstDir needs to be absolute path
-  //} );
-
-  //if( assetDir === assetSrcAbsPath ) throw new Error( 'Could not find url for that asset.' );
-
-  //var assetUrl = path.join('/', assetDir, assetFileName);
+  if (!assetPath) throw new Error('asset ' + assetSrcPath + ' not found in metaData.assetMap');
 
   if( _this.outputDirUrl ) assetPath = path.join( _this.outputDirUrl, assetPath );
 
