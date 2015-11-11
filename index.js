@@ -55,9 +55,11 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 
 	if( ! _this.cache ) this.metaData = this.getMetaData();
 
-  if (/.+\.js$/.test(entryPointPath)) entryPointPath = path.dirname(entryPointPath);
-  var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
-  //parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ]; //same result as above, just with the client.js on the end--can just lookup in packagemap right?
+	//if using packageMap instead of entryPoint (with option to be dir or entryPoint):
+	//if (path.extname(entryPointPath)) entryPointPath = path.dirname(entryPointPath); //test for an extension
+	//var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
+
+	var parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ]; //same result as above, just with the client.js on the end--can usually just lookup in packagemap right?
 
 	if( ! parcelId ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
 
@@ -77,15 +79,37 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	}
 };
 
-CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath ) {
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath, cb ) {
 	var _this = this;
+	//var deprecationError = 'Deprecation warning: CarteroNodeHook getAssetUrl fn is now async, please pass it a cb for updated behavior';
 
-  var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[assetSrcPath];
-  if (!assetPath) throw new Error('asset ' + assetSrcPath + ' not found in metaData.assetMap');
+	var attachOutputDir = function( assetPath ) {
+		return ( _this.outputDirUrl && assetPath ) ? path.join( _this.outputDirUrl, assetPath ) : assetPath;
+	};
 
-  if( _this.outputDirUrl ) assetPath = path.join( _this.outputDirUrl, assetPath );
-
-	return assetPath;
+	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcPath ];
+	if( assetPath ) {
+		cb( null, attachOutputDir( assetPath ) );
+	} else {
+		//console.log('asset ' + assetSrcPath + ' not found in metaData.assetMap, falling through first to getAssetsForEntryPoint
+			this.getAssetsForEntryPoint( assetSrcPath, function( err, parcelAssets ) {
+				if( err ) { //fall through finally to pathMapper
+					var assetPath = pathMapper( assetSrcPath, function( srcDir ) { //not async
+						srcDir = _this.getPackageMapKeyFromPath( srcDir );
+						return _this.metaData.packageMap[ srcDir ] ? '/' + _this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
+					});
+					var e;
+					if( assetPath === assetSrcPath ) { //TODO
+						e = 'Could not find url for that asset using pathMapper.';
+						throw new Error( e );
+					}
+					cb( e, attachOutputDir( scriptPath ) );
+				} else {
+					var scriptPath = parcelAssets.script && parcelAssets.script[ 0 ];
+					cb( null, attachOutputDir( scriptPath ) );
+				}
+			} );
+	}
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
