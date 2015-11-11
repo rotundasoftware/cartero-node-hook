@@ -73,14 +73,14 @@ test( 'example3 (no baseUrl)', function( t ) {
 	} );
 
 	hook.getAssetUrl( '/my/fake/abs/path/page2/img/photo.png', function( err, result ) {
-		if (err) console.log(err);
+		if ( err ) console.log( err );
 		t.deepEqual( result, '/ea7138e6b6eea6321eb1926e8ac88d65f16aa51d/img/photo_sha.png' );
 	} );
 
 	//TODO eventually test the unhappy pathMapper path (photo doesn't exist), implementation must be made to add the fingerprinted img
 	//hook.getAssetUrl( '/my/fake/abs/path/page1/img/photo.png', function( err, result ) {
-	//if (err)	console.log('err: ',err);
-	//console.log('res: ',result);
+	//if ( err )	console.log( 'err: ',err );
+	//console.log( 'res: ',result );
 	//t.deepEqual( result, '/ea7138e6b6eea6321eb1926e8ac88d65f16aa51d/img/photo_sha.png' );
 	//} );
 } );

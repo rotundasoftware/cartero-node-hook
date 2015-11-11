@@ -50,11 +50,12 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 	} );
 };
 
-CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb ) { //entryPointPath can be dir or path (that may end in .js)
+CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb ) {
 	var _this = this;
 
 	if( ! _this.cache ) this.metaData = this.getMetaData();
 
+	//TODO perhaps impl so entryPointPath can be dir OR path (that may end in an ext such as .js)?
 	//if using packageMap instead of entryPoint (with option to be dir or entryPoint):
 	//if (path.extname(entryPointPath)) entryPointPath = path.dirname(entryPointPath); //test for an extension
 	//var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
@@ -90,8 +91,7 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath, cb ) {
 	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcPath ];
 	if( assetPath ) {
 		cb( null, attachOutputDir( assetPath ) );
-	} else {
-		//console.log('asset ' + assetSrcPath + ' not found in metaData.assetMap, falling through first to getAssetsForEntryPoint
+	} else { //assetSrcPath not found in metaData.assetMap, fall through to getAssetsForEntryPoint
 			this.getAssetsForEntryPoint( assetSrcPath, function( err, parcelAssets ) {
 				if( err ) { //fall through finally to pathMapper
 					var assetPath = pathMapper( assetSrcPath, function( srcDir ) { //not async
