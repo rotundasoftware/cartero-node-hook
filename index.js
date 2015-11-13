@@ -82,10 +82,10 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	}
 };
 
-CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath, cb ) {
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath) {
 	var _this = this;
 
-	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcPath ];
+	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcAbsPath ];
   return _this.outputDirUrl && assetPath ? path.join( _this.outputDirUrl, assetPath ) : assetPath;
 };
 
