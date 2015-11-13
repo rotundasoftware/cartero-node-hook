@@ -7,7 +7,7 @@ var _ = require( 'underscore' );
 var kMetaDataFileName = 'metaData.json';
 var kOldPackageMapName = 'package_map.json';
 
-var kMetaDataFormatVersion = 2;
+var kMetaDataFormatVersion = 3;
 
 module.exports = CarteroNodeHook;
 
@@ -82,34 +82,9 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 
 CarteroNodeHook.prototype.getAssetUrl = function( assetSrcPath, cb ) {
 	var _this = this;
-	//var deprecationError = 'Deprecation warning: CarteroNodeHook getAssetUrl fn is now async, please pass it a cb for updated behavior';
-
-	var attachOutputDir = function( assetPath ) {
-		return ( _this.outputDirUrl && assetPath ) ? path.join( _this.outputDirUrl, assetPath ) : assetPath;
-	};
 
 	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcPath ];
-	if( assetPath ) {
-		cb( null, attachOutputDir( assetPath ) );
-	} else { //assetSrcPath not found in metaData.assetMap, fall through to getAssetsForEntryPoint
-			this.getAssetsForEntryPoint( assetSrcPath, function( err, parcelAssets ) {
-				if( err ) { //fall through finally to pathMapper
-					var assetPath = pathMapper( assetSrcPath, function( srcDir ) { //not async
-						srcDir = _this.getPackageMapKeyFromPath( srcDir );
-						return _this.metaData.packageMap[ srcDir ] ? '/' + _this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
-					});
-					var e;
-					if( assetPath === assetSrcPath ) { //TODO
-						e = 'Could not find url for that asset using pathMapper.';
-						throw new Error( e );
-					}
-					cb( e, attachOutputDir( scriptPath ) );
-				} else {
-					var scriptPath = parcelAssets.script && parcelAssets.script[ 0 ];
-					cb( null, attachOutputDir( scriptPath ) );
-				}
-			} );
-	}
+  return _this.outputDirUrl && assetPath ? path.join( _this.outputDirUrl, assetPath ) : assetPath;
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {

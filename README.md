@@ -60,15 +60,12 @@ h.getAssetsForEntryPoint( '/usr/rotunda/my-app/views/page2/page2.js', function( 
 }
 ```
 
-### h.getAssetUrl( assetPath, cb )
+### h.getAssetUrl( assetPath )
 
-Returns the url of the asset with the absolute path `assetPath`. First tries to find the asset in assetMap, then entryPointMap, then finally falls through to return the url of the asset that was at that path at the time cartero was run (an error is thrown if the supplied path does not correspond to an asset of any entry point for which cartero was run.)
+Returns the url of the asset with the absolute path `assetPath` using metaData.json assetMap
 
 ```javascript
-h.getAssetUrl( '/usr/rotunda/my-app/views/page2/photo.png', function( err, asset ) {
-  if( err ) return console.error( err );
-  console.log( asset ); //'url/to/package/img/photo_sha.png'
-}
+h.getAssetUrl( '/usr/rotunda/my-app/views/page2/photo.png') //'url/to/package/img/photo_sha.png'
 ```
 
 ## Contributors
@@ -82,9 +79,9 @@ MIT
 
 ## Change log
 
-### v3.0.0
+### v2.1.0
 
-* Changed `getAssetUrl` to expect a cb (internals are sometimes async so this is required, implementation has changed to first look for asset data in the metaData created by cartero)
+* Changed `getAssetUrl` implementation (looks in asset data in the metaData created by cartero)
 
 ### v2.0.0
 
