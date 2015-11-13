@@ -1,5 +1,5 @@
 {
-	"formatVersion" : 2,
+	"formatVersion" : 3,
 	"entryPointMap" : {
 	    "/my/fake/abs/path/page1/page1.js": "b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca",
 	    "/my/fake/abs/path/page2/page2.js": "ea7138e6b6eea6321eb1926e8ac88d65f16aa51d"
