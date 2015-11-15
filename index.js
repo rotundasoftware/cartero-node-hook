@@ -7,7 +7,7 @@ var _ = require( 'underscore' );
 var kMetaDataFileName = 'metaData.json';
 var kOldPackageMapName = 'package_map.json';
 
-var kMetaDataFormatVersion = 2;
+var kMetaDataFormatVersion = 3;
 
 module.exports = CarteroNodeHook;
 
@@ -22,7 +22,7 @@ function CarteroNodeHook( outputDirPath, options ) {
 		outputDirUrl : '/',
 		cache : true
 	} );
-	
+
 	this.appRootDir = options.appRootDir;
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
@@ -51,6 +51,10 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 };
 
 CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb ) {
+	//TODO perhaps impl so entryPointPath can be dir OR path (that may end in an ext such as .js)?
+	//if using packageMap instead of entryPoint (with option to be dir or entryPoint):
+	//if (path.extname(entryPointPath)) entryPointPath = path.dirname(entryPointPath); //test for an extension
+	//var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
 	var _this = this;
 
 	if( ! _this.cache ) this.metaData = this.getMetaData();
@@ -78,21 +82,11 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	}
 };
 
-CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath) {
 	var _this = this;
 
-	var url = pathMapper( assetSrcAbsPath, function( srcDir ) {
-		srcDir = _this.getPackageMapKeyFromPath( srcDir );
-		return _this.metaData.packageMap[ srcDir ] ? '/' + _this.metaData.packageMap[ srcDir ] : null; // return val of dstDir needs to be absolute path
-	} );
-
-	if( url === assetSrcAbsPath )
-		throw new Error( 'Could not find url for that asset.' );
-
-	if( _this.outputDirUrl )
-		url = path.join( _this.outputDirUrl, url );
-
-	return url;
+	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcAbsPath ];
+  return _this.outputDirUrl && assetPath ? path.join( _this.outputDirUrl, assetPath ) : assetPath;
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
@@ -123,4 +117,4 @@ CarteroNodeHook.prototype.getMetaData = function() {
 	}
 
 	return metaData;
-}
+};
