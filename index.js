@@ -18,7 +18,7 @@ function CarteroNodeHook( outputDirPath, options ) {
 		throw new Error( 'outputDirPath is required' );
 
 	options = _.defaults( {}, options, {
-		appRootDir : undefined,
+		appRootDir : '/',
 		outputDirUrl : '/',
 		cache : true
 	} );
@@ -82,16 +82,26 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	}
 };
 
-CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath) {
+CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	var _this = this;
 
-	var assetPath = _this.metaData.assetMap && _this.metaData.assetMap[ assetSrcAbsPath ];
-  return _this.outputDirUrl && assetPath ? path.join( _this.outputDirUrl, assetPath ) : assetPath;
+	if( ! this.metaData ) {
+		throw new Error( 'Cartero meta data file could not be read.' );
+	}
+
+	var assetPathRelativeToAppDir = path.relative( this.appRootDir, assetSrcAbsPath );
+
+	if( ! this.metaData.assetMap[ assetPathRelativeToAppDir ] ) {
+		throw new Error( 'Could not find url for asset "' +  assetSrcAbsPath + '" because no corresponding asset map entry was found.' );
+	}
+
+	var assetPathRelativeToOutputDir = this.metaData.assetMap[ assetPathRelativeToAppDir ];
+
+	return _this.outputDirUrl ? path.join( _this.outputDirUrl, assetPathRelativeToOutputDir ) : assetPathRelativeToOutputDir;
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
-	if( this.appRootDir ) return './' + path.relative( this.appRootDir, packagePath );
-	else return packagePath;
+	return path.relative( this.appRootDir, packagePath );
 };
 
 CarteroNodeHook.prototype.getMetaData = function() {
