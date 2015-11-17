@@ -79,7 +79,7 @@ MIT
 
 ## Change log
 
-### v2.0.1
+### v3.0.0
 
 * Changed `getAssetUrl` implementation (looks in asset data in the metaData created by cartero)
 
