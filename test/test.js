@@ -43,7 +43,7 @@ test( 'example3', function( t ) {
 } );
 
 test( 'example3 (no baseUrl)', function( t ) {
-	t.plan( 5 );
+	t.plan( 6 );
 
 	var hook = new CarteroNodeHook(
 		path.join( __dirname, "example3/static/assets" )
@@ -68,6 +68,10 @@ test( 'example3 (no baseUrl)', function( t ) {
 	var asset = hook.getAssetUrl( '/my/fake/abs/path/page2/img/photo.png' );
 	t.deepEqual( asset, '/ea7138e6b6eea6321eb1926e8ac88d65f16aa51d/img/photo_sha.png' );
 
-	var nonexistentAsset = hook.getAssetUrl( '/my/fake/abs/path/page1/img/photo.png' );
+	var nonexistentAsset;
+	t.throws( function() {
+		nonexistentAsset = hook.getAssetUrl( '/my/fake/abs/path/page1/img/photo.png' );
+	} );
+
 	t.deepEqual( nonexistentAsset, undefined );
 } );
