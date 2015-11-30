@@ -1,7 +1,9 @@
 var fs = require( 'fs' );
 var path = require( 'path' );
 var shasum = require( 'shasum' );
+var pathMapper = require( 'path-mapper' );
 var _ = require( 'underscore' );
+var url = require( 'url' );
 
 var kMetaDataFileName = 'metaData.json';
 var kOldPackageMapName = 'package_map.json';
@@ -19,13 +21,18 @@ function CarteroNodeHook( outputDirPath, options ) {
 	options = _.defaults( {}, options, {
 		appRootDir : '/',
 		outputDirUrl : '/',
-		cache : true
+		cache : true,
+		useCDN : false
 	} );
 
 	this.appRootDir = options.appRootDir;
 	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 	this.cache = options.cache;
+	this.useCDN = options.useCDN;
+	// is we are using a CDN normalize the outputDirUrl
+	if( this.useCDN && this.outputDirUrl.charAt( this.outputDirUrl.length - 1 ) !== '/' ) this.outputDirUrl += '/';
+
 
 	this.metaData = this.getMetaData();
 	this.parcelAssetsCache = {};
@@ -38,11 +45,13 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 		if( err ) return cb( err );
 
 		var scriptTags = assetUrls.script.map( function( assetPath ) {
-			return '<script type="text/javascript" src="' + path.join( _this.outputDirUrl, assetPath ) + '"></script>';
+			var srcUrl = ( _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPath ) : path.join( _this.outputDirUrl, assetPath )
+			return '<script type="text/javascript" src="' + srcUrl + '"></script>';
 		} ).join( '\n' );
 
 		var styleTags = assetUrls.style.map( function( assetPath ) {
-			return '<link rel="stylesheet" href="' + path.join( _this.outputDirUrl, assetPath ) + '"></link>';
+			var srcUrl = ( _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPath ) : path.join( _this.outputDirUrl, assetPath )
+			return '<link rel="stylesheet" href="' + srcUrl + '"></link>';
 		} ).join( '\n' );
 
 		cb( null, scriptTags, styleTags );
@@ -96,7 +105,9 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 
 	var assetPathRelativeToOutputDir = this.metaData.assetMap[ assetPathRelativeToAppDir ];
 
-	return _this.outputDirUrl ? path.join( _this.outputDirUrl, assetPathRelativeToOutputDir ) : assetPathRelativeToOutputDir;
+	return ( _this.outputDirUrl && _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPathRelativeToOutputDir ) :
+		( _this.outputDirUrl ) ? path.join( _this.outputDirUrl, assetPathRelativeToOutputDir ) :
+		assetPathRelativeToOutputDir;
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
