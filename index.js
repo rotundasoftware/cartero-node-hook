@@ -3,7 +3,9 @@ var path = require( 'path' );
 var shasum = require( 'shasum' );
 var pathMapper = require( 'path-mapper' );
 var _ = require( 'underscore' );
+
 var url = require( 'url' );
+var request = require( 'request' );
 
 var kMetaDataFileName = 'metaData.json';
 var kOldPackageMapName = 'package_map.json';
@@ -12,29 +14,29 @@ var kMetaDataFormatVersion = 3;
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( outputDirPath, options ) {
-	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( outputDirPath, options );
+function CarteroNodeHook( outputDirUrl, options ) {
+	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( outputDirUrl, options );
 
-	if( outputDirPath === undefined )
-		throw new Error( 'outputDirPath is required' );
+	if( outputDirUrl === undefined )
+		throw new Error( 'outputDirUrl is required' );
+
+	// we need to make sure that the outputDirUrl is valid ( need to improve this check )
+	if( outputDirUrl.search( /^(http(s?))\:\/\/[a-z0-9]/gi ) < 0 )
+		throw new Error( 'outputDirUrl is now a valid URL' );
+
 
 	options = _.defaults( {}, options, {
 		appRootDir : '/',
-		outputDirUrl : '/',
-		cache : true,
-		useCDN : false
+		cache : true
 	} );
 
 	this.appRootDir = options.appRootDir;
-	this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
-	this.outputDirUrl = options.outputDirUrl;
+	this.outputDirUrl = outputDirUrl;
 	this.cache = options.cache;
-	this.useCDN = options.useCDN;
-	// is we are using a CDN normalize the outputDirUrl
-	if( this.useCDN && this.outputDirUrl.charAt( this.outputDirUrl.length - 1 ) !== '/' ) this.outputDirUrl += '/';
 
+	// normalize the outputDirUrl
+	if( this.outputDirUrl.charAt( this.outputDirUrl.length - 1 ) !== '/' ) this.outputDirUrl += '/';
 
-	this.metaData = this.getMetaData();
 	this.parcelAssetsCache = {};
 }
 
@@ -42,16 +44,19 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 	var _this = this;
 
 	this.getAssetsForEntryPoint( entryPointPath, function( err, assetUrls ) {
-		if( err ) return cb( err );
+		if( err ) {
+			console.log( err );
+			return cb( err );
+		}
 
 		var scriptTags = assetUrls.script.map( function( assetPath ) {
-			var srcUrl = ( _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPath ) : path.join( _this.outputDirUrl, assetPath )
-			return '<script type="text/javascript" src="' + srcUrl + '"></script>';
+			// var srcUrl = ( _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPath ) : path.join( _this.outputDirUrl, assetPath )
+			return '<script type="text/javascript" src="' + url.resolve( _this.outputDirUrl, assetPath ) + '"></script>';
 		} ).join( '\n' );
 
 		var styleTags = assetUrls.style.map( function( assetPath ) {
-			var srcUrl = ( _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPath ) : path.join( _this.outputDirUrl, assetPath )
-			return '<link rel="stylesheet" href="' + srcUrl + '"></link>';
+			// var srcUrl = ( _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPath ) : path.join( _this.outputDirUrl, assetPath )
+			return '<link rel="stylesheet" href="' + url.resolve( _this.outputDirUrl, assetPath ) + '"></link>';
 		} ).join( '\n' );
 
 		cb( null, scriptTags, styleTags );
@@ -65,36 +70,43 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	//var parcelId = this.metaData.packageMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
 	var _this = this;
 
-	if( ! _this.cache ) this.metaData = this.getMetaData();
+	this.setupMetaData( function( err ) {
+		if( err ) return cb( err );
 
-	if( ! this.metaData ) {
-		return cb( new Error( 'Cartero meta data file could not be read.' ) );
-	}
+		var parcelId = _this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
+		if( ! parcelId ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
 
-	var parcelId = this.metaData.entryPointMap[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
-	if( ! parcelId ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
+		if( _this.cache && _this.parcelAssetsCache[ parcelId ] )
+			cb( null, _this.parcelAssetsCache[ parcelId ] );
+		else {
+			var assetUrl = url.resolve( _this.outputDirUrl, parcelId + '/assets.json' );
 
-	if( _this.cache && this.parcelAssetsCache[ parcelId ] )
-		cb( null, this.parcelAssetsCache[ parcelId ] );
-	else {
-		fs.readFile( path.join( this.outputDirPath, parcelId, 'assets.json' ), function( err, contents ) {
-			if( err ) return cb( err );
+			request.get( assetUrl, function( err, res, data ) {
+				if( ! err && res.statusCode === 200 ) {
+					try {
+						parcelAssets = JSON.parse( data );
+					}
+					catch( err ) {
+						return cb( err )
+					}
 
-			var parcelAssets = JSON.parse( contents );
+					if( _this.cache )
+						_this.parcelAssetsCache[ parcelId ] = parcelAssets;
 
-			if( _this.cache )
-				_this.parcelAssetsCache[ parcelId ] = parcelAssets;
+					return cb( null, parcelAssets );
+				}
 
-			cb( null, parcelAssets );
-		} );
-	}
+				return cb( new Error( "Could not get file from " + assetUrl ) );
+			} );
+		}
+	} );
 };
 
 CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	var _this = this;
 
 	if( ! this.metaData ) {
-		throw new Error( 'Cartero meta data file could not be read.' );
+		throw new Error( 'Cartero meta data file could not be read. Please make sure to call first hook.setupMetaData' );
 	}
 
 	var assetPathRelativeToAppDir = path.relative( this.appRootDir, assetSrcAbsPath );
@@ -105,36 +117,52 @@ CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 
 	var assetPathRelativeToOutputDir = this.metaData.assetMap[ assetPathRelativeToAppDir ];
 
-	return ( _this.outputDirUrl && _this.useCDN ) ? url.resolve( _this.outputDirUrl, assetPathRelativeToOutputDir ) :
-		( _this.outputDirUrl ) ? path.join( _this.outputDirUrl, assetPathRelativeToOutputDir ) :
-		assetPathRelativeToOutputDir;
+	return url.resolve( _this.outputDirUrl, assetPathRelativeToOutputDir );
 };
 
 CarteroNodeHook.prototype.getPackageMapKeyFromPath = function( packagePath ) {
 	return path.relative( this.appRootDir, packagePath );
 };
 
-CarteroNodeHook.prototype.getMetaData = function() {
+CarteroNodeHook.prototype.getMetaData = function( cb ) {
 	var _this = this;
 	var metaData;
 
-	try {
-		var data = fs.readFileSync( path.join( this.outputDirPath, kMetaDataFileName ), 'utf8' );
-		metaData = JSON.parse( data );
-	} catch( err ) {
-		if( fs.existsSync( path.join( this.outputDirPath, kOldPackageMapName ) ) )
-			throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + this.outputDirPath + '. It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook.\n' + err );
+	var metaDataUrl = url.resolve( _this.outputDirUrl, kMetaDataFileName );
+	request.get( metaDataUrl, function( err, res, data ) {
+		if( ! err && res.statusCode === 200 ) {
+			try {
+				metaData = JSON.parse( data );
+			}
+			catch( err ) {
+				if( _this.cache )
+					return cb( new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + _this.outputDirUrl + '. (Have you run cartero yet?)\n' + err ) );
+				return cb( err )
+			}
 
-		if( _this.cache ) {
-			throw new Error( 'Error while reading ' + kMetaDataFileName + ' file from ' + this.outputDirPath + '. (Have you run cartero yet?)\n' + err );
-		} else {
-			console.log( 'WARNING: Error while reading ' + kMetaDataFileName + ' file from ' + this.outputDirPath + '. (Have you run cartero yet?)\n' + err );
+			if( metaData && metaData.formatVersion < kMetaDataFormatVersion ) {
+				throw new Error( 'It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook. Please update your version of cartero to the most recent release.' );
+			}
+
+			return cb( null, metaData );
 		}
-	}
 
-	if( metaData && metaData.formatVersion < kMetaDataFormatVersion ) {
-		throw new Error( 'It looks like your assets were compiled with an old version of cartero incompatible with this cartero hook. Please update your version of cartero to the most recent release.' );
-	}
+		return cb( new Error( 'Could not get ' + kMetaDataFileName + ' file from ' + _this.outputDirUrl ) );
+	} );
+};
 
-	return metaData;
+CarteroNodeHook.prototype.setupMetaData = function( cb ) {
+	if( this.cache && this.metaData ) return cb( null );
+
+	return this.fetchMetadata( cb );
+};
+
+CarteroNodeHook.prototype.fetchMetadata = function( cb ) {
+	var _this = this;
+
+	this.getMetaData( function( err, metaData ) {
+		if( err ) return cb( err );
+		_this.metaData = metaData;
+		return cb( null );
+	} );
 };
