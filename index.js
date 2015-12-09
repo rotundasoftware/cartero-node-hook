@@ -14,11 +14,11 @@ var kMetaDataFormatVersion = 3;
 
 module.exports = CarteroNodeHook;
 
-function CarteroNodeHook( outputDirUrl, options ) {
+function CarteroNodeHook( outputDirUrl, options, cb ) {
 	if( ! ( this instanceof CarteroNodeHook ) ) return new CarteroNodeHook( outputDirUrl, options );
 
 	if( outputDirUrl === undefined )
-		throw new Error( 'outputDirUrl is required' );
+	throw new Error( 'outputDirUrl is required' );
 
 	// we need to make sure that the outputDirUrl is valid ( need to improve this check )
 	if( outputDirUrl.search( /^(http(s?))\:\/\/[a-z0-9]/gi ) < 0 )
@@ -149,6 +149,13 @@ CarteroNodeHook.prototype.getMetaData = function( cb ) {
 
 		return cb( new Error( 'Could not get ' + kMetaDataFileName + ' file from ' + _this.outputDirUrl ) );
 	} );
+};
+
+CarteroNodeHook.prototype.initialize = function( cb ) {
+	if( this.initialized ) return cb( null );
+	this.initialized = true;
+
+	return this.fetchMetadata( cb );
 };
 
 CarteroNodeHook.prototype.setupMetaData = function( cb ) {
