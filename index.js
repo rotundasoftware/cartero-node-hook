@@ -1,7 +1,6 @@
 var fs = require( 'fs' );
 var path = require( 'path' );
 var shasum = require( 'shasum' );
-var pathMapper = require( 'path-mapper' );
 var _ = require( 'underscore' );
 
 var url = require( 'url' );
