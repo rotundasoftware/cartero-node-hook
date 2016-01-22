@@ -79,7 +79,7 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 	}
 
 	// var entryPointAssets = this.metaData.entryPoints[ entryPointPath ];
-	var entryPointAssets = this.metaData.entryPoints[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
+	var entryPointAssets = this.metaData.assetsRequiredByEntryPoint[ _this.getPackageMapKeyFromPath( entryPointPath ) ];
 	if( ! entryPointAssets ) return cb( new Error( 'Could not find assets for entry point with absolute path "' + entryPointPath + '"' ) );
 
 	// if metaDataProvidedAsArgument don't use cache
