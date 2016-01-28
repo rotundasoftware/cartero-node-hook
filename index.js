@@ -24,10 +24,6 @@ function CarteroNodeHook( outputDirPathOrMetaData, options ) {
 		cache : true
 	} );
 
-	// we need to make sure that the outputDirUrl is valid
-	if( options.outputDirUrl.search( /^(http(s?))\:\/\/[a-z0-9]/gi ) < 0 )
-		throw new Error( 'outputDirUrl is now a valid URL' );
-
 	this.metaDataProvidedAsArgument = ( _.isObject( outputDirPathOrMetaData ) ) ? true : false;
 	this.outputDirPath = ( ! this.metaDataProvidedAsArgument ) ? path.resolve( path.dirname( require.main.filename ), outputDirPathOrMetaData ) : null;
 	this.metaData = ( ! this.metaDataProvidedAsArgument ) ? this.getMetaData() : outputDirPathOrMetaData;
