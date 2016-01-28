@@ -3,15 +3,12 @@ var CarteroNodeHook = require( "../" );
 var path = require( "path" );
 
 test( 'throw errors when required options are missing', function( t ) {
-	t.plan( 2 );
+	t.plan( 1 );
 
 	t.throws( function() {
 		var hook = CarteroNodeHook();
 	} );
 
-	t.throws( function() {
-		var hook = CarteroNodeHook( '' );
-	} );
 } );
 
 test( 'example3', function( t ) {
@@ -41,20 +38,4 @@ test( 'example3', function( t ) {
 		t.deepEqual( styleTags, '<link rel="stylesheet" href="http://localhost/l/b4ca7610c2ace13dc8d4c9f96eb62b459fcfceca/page1_bundle_da3d062d2f431a76824e044a5f153520dad4c697.css"></link>' );
 	} );
 
-} );
-
-test( 'example3 (no baseUrl should throw an error)', function( t ) {
-	t.plan( 2 );
-
-	try{ 
-		var hook = new CarteroNodeHook(
-			path.join( __dirname, "example3/static/assets" )
-		);
-	} catch( error ){
-		t.equal( error.toString() ,'Error: outputDirUrl is now a valid URL');
-	}
-
-	t.throws( function() {
-		new CarteroNodeHook( path.join( __dirname, "example3/static/assets" ) )
-	} );
 } );
