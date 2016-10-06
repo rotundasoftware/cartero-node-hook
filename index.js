@@ -9,6 +9,7 @@ var kMetaDataFileName = 'metaData.json';
 var kOldPackageMapName = 'package_map.json';
 
 var kMetaDataFormatVersion = 4;
+var kCrossoriginAttribute = 'crossorigin="anonymous"';
 
 module.exports = CarteroNodeHook;
 
@@ -21,7 +22,8 @@ function CarteroNodeHook( outputDirPathOrMetaData, options ) {
 	options = _.defaults( {}, options, {
 		appRootDir : '/',
 		outputDirUrl : '/',
-		cache : true
+		cache : true,
+		addCrossorigin : false
 	} );
 
 	this.metaDataProvidedAsArgument = ( _.isObject( outputDirPathOrMetaData ) ) ? true : false;
@@ -32,6 +34,7 @@ function CarteroNodeHook( outputDirPathOrMetaData, options ) {
 	// this.outputDirPath = path.resolve( path.dirname( require.main.filename ), outputDirPath );
 	this.outputDirUrl = options.outputDirUrl;
 	this.cache = options.cache;
+	this.addCrossorigin = options.addCrossorigin;
 
 	// this.metaData = this.getMetaData();
 	this.parcelAssetsCache = {};
@@ -47,7 +50,7 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 		if( err ) return cb( err );
 
 		var scriptTags = assetUrls.script.map( function( assetPath ) {
-			return '<script type="text/javascript" src="' + url.resolve( _this.outputDirUrl, assetPath ) + '"></script>';
+			return '<script type="text/javascript" ' + ( ( _this.addCrossorigin ) ? ( kCrossoriginAttribute + ' ' ) : '' ) + 'src="' + url.resolve( _this.outputDirUrl, assetPath ) + '"></script>';
 		} ).join( '\n' );
 
 		var styleTags = assetUrls.style.map( function( assetPath ) {
