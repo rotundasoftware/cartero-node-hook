@@ -79,6 +79,10 @@ MIT
 
 ## Change log
 
+### v0.3.2
+
+* Add option to support set the `crossorigin` attribute in script tag.
+
 ### v3.0.0
 
 * Changed `getAssetUrl` implementation (looks in asset data in the metaData created by cartero)
@@ -96,4 +100,3 @@ MIT
 ### v0.3.1
 
 * First version in this change log.
->>>>>>> Stashed changes
