@@ -97,6 +97,11 @@ CarteroNodeHook.prototype.getAssetsForEntryPoint = function( entryPointPath, cb 
 CarteroNodeHook.prototype.getAssetUrl = function( assetSrcAbsPath ) {
 	var _this = this;
 
+	if( ! _this.cache && ! this.metaData ) {
+		if ( ! this.metaDataProvidedAsArgument ) this.metaData = this.getMetaData();
+		else console.warn( 'You ask me to refresh the metaData but you provide as argument, please check your config.');
+	}
+
 	if( ! this.metaData ) {
 		throw new Error( 'Cartero meta data file could not be read.' );
 	}
