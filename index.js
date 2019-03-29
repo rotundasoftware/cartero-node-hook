@@ -54,7 +54,7 @@ CarteroNodeHook.prototype.getTagsForEntryPoint = function( entryPointPath, cb ) 
 		} ).join( '\n' );
 
 		var styleTags = assetUrls.style.map( function( assetPath ) {
-			return '<link rel="stylesheet" href="' + url.resolve( _this.outputDirUrl, assetPath ) + '"></link>';
+			return '<link rel="stylesheet" href="' + url.resolve( _this.outputDirUrl, assetPath ) + '">';
 		} ).join( '\n' );
 
 		cb( null, scriptTags, styleTags );
